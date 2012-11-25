@@ -61,7 +61,7 @@ elseif(defined('THIS_SCRIPT'))
 				$templatelist = '';
 			}
 
-			$templatelist = 'ougccustomrep, ougccustomrep_headerinclude, ougccustomrep_misc, ougccustomrep_misc_ajax, ougccustomrep_misc_ajax_fullview, ougccustomrep_misc_error, ougccustomrep_misc_row, ougccustomrep_rep, ougccustomrep_rep_img, ougccustomrep_rep_number, ougccustomrep_rep_voted';
+			$templatelist .= 'ougccustomrep, ougccustomrep_rep, ougccustomrep_rep_voted, ougccustomrep_rep_number, ougccustomrep_rep_img, ougccustomrep_headerinclude, postbit, postbit_classic'; // somehow the postbit templates are not being cached
 			break;
 		case 'reputation.php':
 			$plugins->add_hook('reputation_start', 'ougc_customrep_delete_reputation');
@@ -88,7 +88,7 @@ function ougc_customrep_info()
 		'website'		=> 'http://mods.mybb.com/view/ougc-custom-reputation',
 		'author'		=> 'Omar Gonzalez',
 		'authorsite'	=> 'http://community.mybb.com/user-25096.html',
-		'version'		=> '1.0',
+		'version'		=> '1.0.1',
 		'versioncode'	=> 1000,
 		'compatibility'	=> '16*',
 		'guid' 			=> '9c6ae7c76e57f5edea5aa4697e8b064c',
@@ -614,15 +614,17 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 // Plugin request
 function ougc_customrep_request()
 {
-	global $customrep, $mybb, $tid;
-
-	$customrep->set_url(get_thread_link($tid)); //TODO
+	global $customrep, $mybb;
 
 	$mybb->input['action'] = isset($mybb->input['action']) ? $mybb->input['action'] : '';
 	if(!$customrep->active || !in_array($mybb->input['action'], array('customrep', 'customreppu')))
 	{
 		return;
 	}
+
+	global $tid;
+
+	$customrep->set_url(get_thread_link($tid)); //TODO
 
 	$mybb->input['ajax'] = ($customrep->ajax_request && isset($mybb->input['ajax']) && $mybb->input['ajax'] == 1 ? true : false);
 
@@ -669,7 +671,7 @@ function ougc_customrep_request()
 		}
 
 		// Save four queries here
-		$templates->cache('ougccustomrep, ougccustomrep_headerinclude, ougccustomrep_misc, ougccustomrep_misc_ajax, ougccustomrep_misc_ajax_fullview, ougccustomrep_misc_error, ougccustomrep_misc_row, ougccustomrep_rep, ougccustomrep_rep_img, ougccustomrep_rep_number, ougccustomrep_rep_voted');
+		$templates->cache('ougccustomrep_misc_row, ougccustomrep_misc_error, ougccustomrep_misc_ajax_fullview, ougccustomrep_misc_ajax, ougccustomrep_misc, ougccustomrep_popup_error, ougccustomrep_popup_ajax, ougccustomrep_popup');
 
 		// the ide here is to allow multipage on both, the ajax window as well as the no-ajax one.
 		// Ajax one mulipage works replacing the table content with the new query result, this of course means a new template that probably will end being using it for the not-ajax version as well..
