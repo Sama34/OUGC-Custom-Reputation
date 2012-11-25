@@ -85,7 +85,7 @@ function ougc_customrep_info()
 	return array(
 		'name'          => 'OUGC Custom Reputation',
 		'description'   => $lang->ougc_customrep_d,
-		'website'		=> 'http://mods.mybb.com/view/',
+		'website'		=> 'http://mods.mybb.com/view/ougc-custom-reputation',
 		'author'		=> 'Omar Gonzalez',
 		'authorsite'	=> 'http://community.mybb.com/user-25096.html',
 		'version'		=> '1.0',
