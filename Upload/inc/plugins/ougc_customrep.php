@@ -49,7 +49,14 @@ elseif(defined('THIS_SCRIPT'))
 		case 'showthread.php':
 			$plugins->add_hook('showthread_start', 'ougc_customrep_request', -1);
 			$plugins->add_hook('postbit', 'ougc_customrep_postbit');
-	
+
+			// Moderation
+			$plugins->add_hook('class_moderation_delete_thread_start', 'ougc_customrep_delete_thread');
+			$plugins->add_hook('class_moderation_delete_post_start', 'ougc_customrep_delete_post');
+			$plugins->add_hook('class_moderation_merge_posts', 'ougc_customrep_merge_posts');
+			#$plugins->add_hook('class_moderation_merge_threads', 'ougc_customrep_merge_threads'); // seems like posts are updated instead of "re-created", good, less work
+			#$plugins->add_hook('class_moderation_split_posts', 'ougc_customrep_merge_threads'); // no sure what happens here
+
 			global $templatelist;
 
 			if(isset($templatelist))
@@ -88,8 +95,8 @@ function ougc_customrep_info()
 		'website'		=> 'http://mods.mybb.com/view/ougc-custom-reputation',
 		'author'		=> 'Omar Gonzalez',
 		'authorsite'	=> 'http://community.mybb.com/user-25096.html',
-		'version'		=> '1.0.1',
-		'versioncode'	=> 1000,
+		'version'		=> '1.1',
+		'versioncode'	=> 1100,
 		'compatibility'	=> '16*',
 		'guid' 			=> '9c6ae7c76e57f5edea5aa4697e8b064c',
 		'pl_version' 	=> 11,
@@ -176,31 +183,31 @@ function ougc_customrep_activate()
 	$PL->settings('ougc_customrep', $lang->ougc_customrep, $lang->ougc_customrep_d, array(
 		'groups'	=> array(
 			'title'			=> $lang->ougc_customrep_s_groups,
-			'description'	=> $lang->ougc_customrep_s_groups,
+			'description'	=> $lang->ougc_customrep_s_groups_d,
 			'optionscode'	=> 'text',
 			'value'			=> '7,1,5',
 		),
 		'forums'	=> array(
 			'title'			=> $lang->ougc_customrep_s_forums,
-			'description'	=> $lang->ougc_customrep_s_forums,
+			'description'	=> $lang->ougc_customrep_s_forums_d,
 			'optionscode'	=> 'text',
 			'value'			=> '',
 		),
 		'firstpost'	=> array(
 			'title'			=> $lang->ougc_customrep_s_firstpost,
-			'description'	=> $lang->ougc_customrep_s_firstpost,
+			'description'	=> $lang->ougc_customrep_s_firstpost_d,
 			'optionscode'	=> 'yesno',
 			'value'			=> 1,
 		),
 		'delete'	=> array(
 			'title'			=> $lang->ougc_customrep_s_delete,
-			'description'	=> $lang->ougc_customrep_s_delete,
+			'description'	=> $lang->ougc_customrep_s_delete_d,
 			'optionscode'	=> 'yesno',
 			'value'			=> 1,
 		),
 		'ajax'	=> array(
 			'title'			=> $lang->ougc_customrep_s_ajax,
-			'description'	=> $lang->ougc_customrep_s_ajax,
+			'description'	=> $lang->ougc_customrep_s_ajax_d,
 			'optionscode'	=> 'yesno',
 			'value'			=> 1,
 		),
@@ -237,7 +244,7 @@ function ougc_customrep_activate()
 		'misc_error'			=> '<tr><td class="trow1" colspan="2">{$error_message}</td></tr>',
 		'misc_row'				=> '<tr>
 <td class="{$trow}" width="60%">{$log[\'profilelink_f\']}</td>
-<td class="{$trow}" width="40%" align="center">{$lang->ougc_customrep_popup_date}</td>
+<td class="{$trow}" width="40%" align="center">{$date}</td>
 </tr>',
 		'rep'					=> '{$image}{$number}&nbsp;',
 		'rep_img'				=> '<img src="{$reputation[\'image\']}" title="{$reputation[\'name\']}" />',
@@ -259,10 +266,17 @@ function ougc_customrep_activate()
 	$info = ougc_customrep_info();
 	if(isset($plugins['customrep']))
 	{
-		/*if($plugins['customrep'] == 1000)
+		if((int)$plugins['customrep'] < 1100)
 		{
-			//...
-		}*/
+			global $db;
+
+			$db->modify_column('ougc_customrep', 'rid', "int UNSIGNED NOT NULL AUTO_INCREMENT");
+			$db->modify_column('ougc_customrep_log', 'lid', "int UNSIGNED NOT NULL AUTO_INCREMENT");
+			$db->modify_column('ougc_customrep_log', 'pid', "int NOT NULL DEFAULT '0'");
+			$db->modify_column('ougc_customrep_log', 'uid', "int NOT NULL DEFAULT '0'");
+			$db->modify_column('ougc_customrep_log', 'rid', "int NOT NULL DEFAULT '0'");
+			$db->modify_column('reputation', 'lid', 'int NOT NULL DEFAULT \'0\'');
+		}
 	}
 	$plugins['customrep'] = $info['versioncode'];
 	$cache->update('ougc_plugins', $plugins);
@@ -305,11 +319,11 @@ function ougc_customrep_install()
 	// Add our tables
 	$collation = $db->build_create_table_collation();
 	$db->write_query("CREATE TABLE `".TABLE_PREFIX."ougc_customrep` (
-			`rid` bigint(30) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`rid` int UNSIGNED NOT NULL AUTO_INCREMENT,
 			`name` varchar(100) NOT NULL DEFAULT '',
 			`image` varchar(255) NOT NULL DEFAULT '',
-			`groups` text NOT NULL DEFAULT '',
-			`forums` text NOT NULL DEFAULT '',
+			`groups` text NOT NULL,
+			`forums` text NOT NULL,
 			`disporder` smallint(5) NOT NULL DEFAULT '0',
 			`visible` smallint(1) NOT NULL DEFAULT '1',
 			`reptype` varchar(3) NOT NULL DEFAULT '',
@@ -317,16 +331,16 @@ function ougc_customrep_install()
 		) ENGINE=MyISAM{$collation};"
 	);
 	$db->write_query("CREATE TABLE `".TABLE_PREFIX."ougc_customrep_log` (
-			`lid` bigint(30) UNSIGNED NOT NULL AUTO_INCREMENT,
-			`pid` bigint(30) NOT NULL DEFAULT '0',
-			`uid` bigint(30) NOT NULL DEFAULT '0',
-			`rid` bigint(30) NOT NULL DEFAULT '0',
+			`lid` int UNSIGNED NOT NULL AUTO_INCREMENT,
+			`pid` int NOT NULL DEFAULT '0',
+			`uid` int NOT NULL DEFAULT '0',
+			`rid` int NOT NULL DEFAULT '0',
 			`dateline` int(10) NOT NULL DEFAULT '0',
 			PRIMARY KEY (`lid`)
 		) ENGINE=MyISAM{$collation};"
 	);
 
-	$db->add_column('reputation', 'lid', 'bigint(30) NOT NULL DEFAULT \'0\'');
+	$db->add_column('reputation', 'lid', 'int NOT NULL DEFAULT \'0\'');
 }
 
 // _is_installed function
@@ -392,6 +406,21 @@ function ougc_customrep_postbit(&$post)
 {
 	global $fid, $customrep, $tid, $templates;
 
+	if($customrep->firstpost_only)
+	{
+		// useless
+		/*global $thread;
+
+		if($post['pid'] != $thread['firstpost'])
+		{
+			return;
+		}*/
+
+		global $plugins;
+
+		$plugins->remove_hook('postbit', 'ougc_customrep_postbit');
+	}
+
 	if(!isset($customrep->cache['query']))
 	{
 		global $settings;
@@ -426,11 +455,17 @@ function ougc_customrep_postbit(&$post)
 		{
 			$pids = "pid='{$thread['firstpost']}'";
 		}
+		// Bug: http://mybbhacks.zingaburga.com/showthread.php?tid=1587&pid=12762#pid12762
+		elseif($mybb->input['mode'] == 'threaded')
+		{
+			$mybb->input['pid'] = (int)$mybb->input['pid'];
+			$pids = "pid='{$mybb->input['pid']}'";
+		}
 		else
 		{
 			$pids = $GLOBALS['pids'];
 		}
-
+	
 		$query = $db->simple_select('ougc_customrep_log', '*', $pids.' AND rid IN (\''.implode('\',\'', $customrep->rids).'\')');
 		while($rep = $db->fetch_array($query))
 		{
@@ -438,24 +473,68 @@ function ougc_customrep_postbit(&$post)
 		}
 	}
 
-	if($customrep->firstpost_only)
-	{
-		global $thread;
-
-		if($post['pid'] != $thread['firstpost'])
-		{
-			return;
-		}
-
-		global $plugins;
-
-		$plugins->remove_hook('postbit', 'ougc_customrep_postbit');
-	}
-
 	$customrep->set_post(array('tid' => $post['tid'], 'pid' => $post['pid'], 'uid' => $post['uid']));
 
 	// Now we build the reputation bit
 	ougc_customrep_parse_postbit($post['customrep']);
+}
+
+// Delete logs when deleting a thread
+function ougc_customrep_delete_thread(&$tid)
+{
+	global $db;
+
+	$pids = array();
+
+	// First we get a list of all posts in this thread, we need this to later get a list of logs
+	$query = $db->simple_select('posts', 'pid', 'tid=\''.(int)$tid.'\'');
+	while($pid = $db->fetch_field($query, 'pid'))
+	{
+		$pids[] = (int)$pid;
+	}
+
+	if($pids)
+	{
+		global $customrep;
+
+		// get log ids and delete them all, this may take some time
+		$query = $db->simple_select('ougc_customrep_log', 'lid', 'pid IN (\''.implode('\',\'', $pids).'\')');
+		while($lid = $db->fetch_field($query, 'lid'))
+		{
+			$customrep->delete_log($lid);
+		}
+	}
+}
+
+// Delete logs upon post deletion
+function ougc_customrep_delete_post(&$pid)
+{
+	global $customrep;
+
+	// get log ids and delete them all, this may take some time
+	$query = $db->simple_select('ougc_customrep_log', 'lid', 'pid=\''.(int)$pid.'\'');
+	while($lid = $db->fetch_field($query, 'lid'))
+	{
+		$customrep->delete_log($lid);
+	}
+}
+
+// Merging post, what a pain!
+function ougc_customrep_merge_posts(&$args)
+{
+	global $db, $customrep;
+	$where = 'pid IN (\''.implode('\',\'', array_map('intval', $args['pids'])).'\')';
+
+	// Now get the master PID, which MyBB doesn't offer..
+	$masterpid = (int)$db->fetch_field($db->simple_select('posts', 'pid', $where, array('limit' => 1, 'order_by' => 'dateline', 'order_dir' => 'asc')), 'pid');
+
+	// First get all the logs attached to these posts
+	$query = $db->simple_select('ougc_customrep_log', 'lid', $where);
+	while($lid = $db->fetch_field($query, 'lid'))
+	{
+		// Update this log
+		$customrep->update_log($lid, array('pid' => $masterpid));
+	}
 }
 
 // When deleting a reputation delete any log assigned to it.
@@ -731,7 +810,7 @@ function ougc_customrep_request()
 
 			$log['date'] = my_date($mybb->settings['dateformat'], $log['dateline']);
 			$log['time'] = my_date($mybb->settings['timeformat'], $log['dateline']);
-			$lang->ougc_customrep_popup_date = $lang->sprintf($lang->ougc_customrep_popup_date, $log['date'], $log['time']);
+			$date = $lang->sprintf($lang->ougc_customrep_popup_date, $log['date'], $log['time']);
 
 			eval('$content .= "'.$templates->get('ougccustomrep_misc_row').'";');
 		}
@@ -1493,15 +1572,12 @@ class OUGC_CustomRep
 				continue;
 			}
 			$db->update_query('users', array('reputation' => "`reputation`{$rrep}"), 'uid=\''.$rep['uid'].'\'', 1, true);// limit - no quotes*/
+
+			// Delete reputation
 			$db->delete_query('reputation', 'rid=\''.(int)$rep['rid'].'\'');
-		}
 
-		foreach($args['uids'] as $uid => $val)
-		{
 			// Recount the reputation of this user - keep it in sync.
-			$query = $db->simple_select('reputation', 'SUM(reputation) AS reputation_count', 'uid=\''.$uid.'\'');
-
-			$db->update_query('users', array('reputation' => (int)$db->fetch_field($query, 'reputation_count')), 'uid=\''.$uid.'\'');
+			$this->sync_reputation($rep['uid']);
 		}
 
 		$plugins->run_hooks('ouc_customrep_delete_log', $args);
@@ -1528,8 +1604,9 @@ class OUGC_CustomRep
 		));
 
 		$args = array(
-			'this'	=> &$this,
-			'lid'	=> $lid
+			'this'		=> &$this,
+			'reptype'	=> &$reptype,
+			'lid'		=> $lid
 		);
 		$plugins->run_hooks('ouc_customrep_insert_log', $args);
 
@@ -1557,14 +1634,76 @@ class OUGC_CustomRep
 			if($reptype != 0) // we don't add neutral reputations, so don't sync
 			{
 				// Recount the reputation of this user - keep it in sync.
-				$query = $db->simple_select('reputation', 'SUM(reputation) AS reputation_count', 'uid=\''.$this->post['uid'].'\'');
-
-				$db->update_query('users', array('reputation' => (int)$db->fetch_field($query, 'reputation_count')), 'uid=\''.$this->post['uid'].'\'');
+				$this->sync_reputation($this->post['uid']);
 				#$db->update_query('users', array('reputation' => "`reputation`{$rrep}"), "uid='{$this->post['uid']}'", 1, true);
 			}
 		}
 
 		return $lid;
+	}
+
+	// Update a log
+	function update_log($lid, $data=array())
+	{
+		global $db;
+		$lid = (int)$lid;
+
+		$update_data = array();
+		if(isset($data['pid']))
+		{
+			$update_data['pid'] = (int)$data['pid'];
+		}
+		if(isset($data['uid']))
+		{
+			$update_data['uid'] = (int)$data['uid'];
+		}
+		if(isset($data['rid']))
+		{
+			$update_data['rid'] = (int)$data['rid'];
+		}
+		if(isset($data['dateline']))
+		{
+			$update_data['dateline'] = (int)$data['dateline'];
+		}
+
+		if($update_data)
+		{
+			$db->update_query('ougc_customrep_log', $update_data, 'lid=\''.$lid.'\'');
+
+			// Since we are updating the pid, we need to update any user reputation as well
+			if(isset($update_data['pid']))
+			{
+				$post = get_post($update_data['pid']);
+				if(!($uid = (int)$post['uid']))
+				{
+					return false;
+				}
+
+				$query = $db->simple_select('reputation', 'rid, uid', 'lid=\''.(int)$lid.'\'');
+				while($rep = $db->fetch_array($query))
+				{
+					// Actually update reputation
+					$db->update_query('reputation', array('pid' => $update_data['pid'], 'uid' => $uid), 'rid=\''.(int)$rep['rid'].'\'');
+
+					// Recount the reputation of this user - keep it in sync.
+					$this->sync_reputation($rep['uid']);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	// Recount the reputation of this user - keep it in sync.
+	function sync_reputation($uid)
+	{
+		global $db;
+		$uid = (int)$uid;
+
+		$query = $db->simple_select('reputation', 'SUM(reputation) AS reputation_count', 'uid=\''.$uid.'\'');
+		$reputation_count = (int)$db->fetch_field($query, 'reputation_count');
+
+		$db->update_query('users', array('reputation' => $reputation_count), 'uid=\''.$uid.'\'');
 	}
 }
 
