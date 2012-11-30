@@ -29,6 +29,7 @@
 
 $l['ougc_customrep'] = 'OUGC Custom Reputation';
 
+// Error messages
 $l['ougc_customrep_error'] = 'Error';
 $l['ougc_customrep_error_nopermission'] = 'You don\'t have permission to do this.';
 $l['ougc_customrep_error_invlidadpost'] = 'Invalid Post';
@@ -51,6 +52,13 @@ $l['ougc_customrep_popup_more'] = 'Click to view more.';
 $l['ougc_customrep_popup_latest'] = 'Currently viewing the latest {1} reputations.';
 $l['ougc_customrep_popup_fullview'] = 'View full list.';
 $l['ougc_customrep_close'] = 'Close';
+
+// UI variables
+$l['ougc_customrep_viewlatest'] = 'View Latest';
+$l['ougc_customrep_viewlatest_noajax'] = 'View Full List';
+$l['ougc_customrep_vote'] = 'Vote: ';
+$l['ougc_customrep_voted'] = 'Voted: ';
+$l['ougc_customrep_delete'] = 'Delete: ';
 
 // Multi-lang support for individual rate types
 #$l['ougc_customrep_name_RID'] = 'Name';
