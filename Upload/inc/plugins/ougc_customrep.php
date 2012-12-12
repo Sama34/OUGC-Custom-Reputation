@@ -41,6 +41,9 @@ if(defined('IN_ADMINCP'))
 
 	// Insert our plugin into the admin permissions page
 	$plugins->add_hook('admin_config_permissions', create_function('&$args', 'global $lang, $customrep;	$customrep->lang_load();	$args[\'ougc_customrep\'] = $lang->ougc_customrep_perm;'));
+
+	// Users merge
+	$plugins->add_hook('admin_user_users_merge_commit', 'ougc_customrep_users_merge');
 }
 elseif(defined('THIS_SCRIPT'))
 {
@@ -344,7 +347,7 @@ function ougc_customrep_install()
 			`dateline` int(10) NOT NULL DEFAULT '0',
 			PRIMARY KEY (`lid`),
 			UNIQUE KEY piduid (pid,uid),
-			CREATE INDEX pidrid (pid,rid)
+			INDEX pidrid (pid,rid)
 		) ENGINE=MyISAM{$collation};"
 	);
 
@@ -406,6 +409,34 @@ function ougc_customrep_uninstall()
 	else
 	{
 		$PL->cache_delete('ougc_plugins');
+	}
+}
+
+//Merging two accounts, update data propertly
+function ougc_customrep_users_merge()
+{
+	global $db, $destination_user, $source_user;
+
+	$fromuid = (int)$source_user['uid'];
+	$touid = (int)$destination_user['uid'];
+
+	// Query all logs that belong to the $fromuid user and update them
+	$query = $db->simple_select('ougc_customrep_log', 'lid', 'uid=\''.$fromuid.'\'');
+	while($lid = $db->fetch_field($query, 'lid'))
+	{
+		$customrep->update_log($lid, array('uid' => $touid));
+	}
+}
+
+// Delete logs from users which are being deleted
+function ougc_customrep_delete_user($uid)
+{
+	global $db, $customrep;
+
+	$query = $db->simple_select('ougc_customrep_log', 'lid', 'uid=\''.(int)$uid.'\'');
+	while($lid = $db->fetch_field($query, 'lid'))
+	{
+		$customrep->delete_log($lid);
 	}
 }
 
@@ -1700,19 +1731,13 @@ class OUGC_CustomRep
 			// Since we are updating the pid, we need to update any user reputation as well
 			if(isset($update_data['pid']))
 			{
-				$post = get_post($update_data['pid']);
-				$uid = (int)$post['uid'];
-
 				$query = $db->simple_select('reputation', 'rid, uid', 'lid=\''.(int)$lid.'\'');
 				while($rep = $db->fetch_array($query))
 				{
 					// Actually update reputation
-					$update = array('pid' => $update_data['pid'], 'uid' => $uid);
-					if(isset($update_data['uid']))
-					{
-						$update['adduid'] = $update_data['uid'];
-					}
-					$db->update_query('reputation', $update, 'rid=\''.(int)$rep['rid'].'\'');
+					$db->update_query('reputation', array(
+						'pid'	=> $update_data['pid'],
+					), 'rid=\''.(int)$rep['rid'].'\'');
 
 					// Recount the reputation of this user - keep it in sync.
 					$this->sync_reputation($rep['uid']);
@@ -1734,6 +1759,87 @@ class OUGC_CustomRep
 
 		$db->update_query('users', array('reputation' => $reputation_count), 'uid=\''.$uid.'\'');
 	}
+
+	// control_object by Zinga Burga from MyBBHacks ( mybbhacks.zingaburga.com ), 1.62
+	function control_object(&$obj, $code)
+	{
+		static $cnt = 0;
+		$newname = '_objcont_'.(++$cnt);
+		$objserial = serialize($obj);
+		$classname = get_class($obj);
+		$checkstr = 'O:'.strlen($classname).':"'.$classname.'":';
+		$checkstr_len = strlen($checkstr);
+		if(substr($objserial, 0, $checkstr_len) == $checkstr)
+		{
+			$vars = array();
+			// grab resources/object etc, stripping scope info from keys
+			foreach((array)$obj as $k => $v)
+			{
+				if($p = strrpos($k, "\0"))
+				{
+					$k = substr($k, $p+1);
+				}
+				$vars[$k] = $v;
+			}
+			if(!empty($vars))
+			{
+				$code .= '
+					function ___setvars(&$a) {
+						foreach($a as $k => &$v)
+							$this->$k = $v;
+					}
+				';
+			}
+			eval('class '.$newname.' extends '.$classname.' {'.$code.'}');
+			$obj = unserialize('O:'.strlen($newname).':"'.$newname.'":'.substr($objserial, $checkstr_len));
+			if(!empty($vars))
+			{
+				$obj->___setvars($vars);
+			}
+		}
+		// else not a valid object or PHP serialize has changed
+	}
 }
 
 $GLOBALS['customrep'] = new OUGC_CustomRep;
+
+// Detect user deletions
+$GLOBALS['customrep']->control_object($db, '
+	function delete_query($table, $where="", $limit="")
+	{
+		if($table == "users" && !$limit)
+		{
+			preg_match_all(\'#uid=\\\'([0-9]+)\\\'#i\', $where, $matches);
+			if(isset($matches[1]))
+			{
+				global $customrep;
+
+				if(is_object($customrep))
+				{
+					foreach($matches[1] as $uid)
+					{
+						ougc_customrep_delete_user($uid);
+					}
+				}
+			}
+			preg_match_all(\'#uid IN \((.*?)\)#i\', $where, $matches);
+			if(isset($matches[1]))
+			{
+				$uids = array_unique(array_map("intval", explode(",", $matches[1])));
+				if($uids)
+				{
+					global $customrep;
+
+					if(is_object($customrep))
+					{
+						foreach($uids as $uid)
+						{
+							ougc_customrep_delete_user($uid);
+						}
+					}
+				}
+			}
+		}
+		return parent::delete_query($table, $where, $limit);
+	}
+');
