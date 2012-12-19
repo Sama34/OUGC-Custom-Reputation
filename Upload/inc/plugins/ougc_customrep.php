@@ -280,7 +280,10 @@ function ougc_customrep_activate()
 			$db->modify_column('ougc_customrep_log', 'rid', "int NOT NULL DEFAULT '0'");
 			$db->modify_column('reputation', 'lid', 'int NOT NULL DEFAULT \'0\'');
 
-			$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log ADD UNIQUE KEY piduid (pid,uid)');
+			if(!$db->index_exists('ougc_customrep_log', 'piduid'))
+			{
+				$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log ADD UNIQUE KEY piduid (pid,uid)');
+			}
 			if(!$db->index_exists('ougc_customrep_log', 'pidrid'))
 			{
 				$db->write_query('CREATE INDEX pidrid ON '.TABLE_PREFIX.'ougc_customrep_log (pid,rid)');
@@ -1609,33 +1612,24 @@ class OUGC_CustomRep
 			'uids'	=> array(),
 			'rids'	=> array()
 		);
-		$query = $db->simple_select('reputation', 'rid, uid', 'lid=\''.(int)$lid.'\'');
+		$query = $db->simple_select('reputation', 'rid, uid, pid', 'lid=\''.(int)$lid.'\'');
 		#$query = $db->simple_select('reputation', 'rid, reputation, uid', 'lid=\''.(int)$lid.'\'');
 		while($rep = $db->fetch_array($query))
 		{
 			$args['uids'][(int)$rep['uid']] = 1;
 			$args['rids'][(int)$rep['rid']] = 1;
-			/*$rep['reputation'] = (int)$rep['reputation'];
-			if($rep['reputation'] > 0) // positive
-			{
-				$rrep = '-'.str_replace(array('+', '-'), '', $rep['reputation']);
-			}
-			elseif($rep['reputation'] < 0) // negative
-			{
-				$rrep = '+'.str_replace(array('+', '-'), '', $rep['reputation']);
-			}
-			else
-			{
-				$db->delete_query('reputation', 'rid=\''.(int)$rep['rid'].'\'');
-				continue;
-			}
-			$db->update_query('users', array('reputation' => "`reputation`{$rrep}"), 'uid=\''.$rep['uid'].'\'', 1, true);// limit - no quotes*/
 
 			// Delete reputation
 			$db->delete_query('reputation', 'rid=\''.(int)$rep['rid'].'\'');
 
 			// Recount the reputation of this user - keep it in sync.
 			$this->sync_reputation($rep['uid']);
+
+			// MyAlerts compatibility
+			if($rep['rid'] && isset($Alerts) && is_object($Alerts) && method_exists($Alerts, 'addAlert'))
+			{
+				$db->delete_query('alerts', 'uid =\''.(int)$rep['uid'].'\' AND from_id=\''.(int)$mybb->user['uid'].'\' AND alert_type=\'rep\' AND from_id=\''.(int)$rep['pid'].'\'');
+			}
 		}
 
 		$plugins->run_hooks('ouc_customrep_delete_log', $args);
@@ -1670,17 +1664,10 @@ class OUGC_CustomRep
 
 		if($reptype !== '')
 		{
+			global $Alerts;
 			$reptype = (int)$reptype;
-			/*if($reptype > 0) // positive
-			{
-				$rrep = '+'.str_replace(array('+', '-'), '', $reptype);
-			}
-			elseif($reptype < 0) // negative
-			{
-				$rrep = '-'.str_replace(array('+', '-'), '', $reptype);
-			}*/
 
-			$db->insert_query('reputation', array(
+			$rip = $db->insert_query('reputation', array(
 				'pid'			=> (int)$this->post['pid'],
 				'uid'			=> (int)$this->post['uid'],
 				'adduid'		=> (int)$mybb->user['uid'],
@@ -1689,11 +1676,23 @@ class OUGC_CustomRep
 				'dateline'		=>	TIME_NOW
 			));
 
+			// MyAlerts compatibility
+			if($rip && isset($Alerts) && is_object($Alerts) && method_exists($Alerts, 'addAlert'))
+			{
+				$query = $db->simple_select('users', 'myalerts_settings', 'uid = '.(int) $reputation['uid'], 1);
+				$settings = $db->fetch_field($query, 'myalerts_settings');
+				$settings = json_decode($settings, true);
+
+				if(isset($settings['rep']) || $settings['rep'] == 'on')
+				{
+					$Alerts->addAlert($this->post['uid'], 'rep', $this->post['pid'], $mybb->user['uid']);
+				}
+			}
+
 			if($reptype != 0) // we don't add neutral reputations, so don't sync
 			{
 				// Recount the reputation of this user - keep it in sync.
 				$this->sync_reputation($this->post['uid']);
-				#$db->update_query('users', array('reputation' => "`reputation`{$rrep}"), "uid='{$this->post['uid']}'", 1, true);
 			}
 		}
 
