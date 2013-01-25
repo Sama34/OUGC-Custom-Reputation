@@ -35,7 +35,6 @@ $l['ougc_customrep_plreq'] = 'This plugin requires <a href="{1}">PluginLibrary</
 $l['ougc_customrep_plold'] = 'This plugin requires PluginLibrary version {1} or later, whereas your current version is {2}. Please do update <a href="{3}">PluginLibrary</a>.';
 
 // Messages
-$l['ougc_customrep_message_updatecache'] = 'Cache succefully updated.';
 $l['ougc_customrep_message_invalidrep'] = 'The selected custom reputation is invalid.';
 $l['ougc_customrep_message_deleterep'] = 'The selected custom reputation was successfully deleted.';
 $l['ougc_customrep_message_empty'] = 'There are not currently existing custom reputations.';
@@ -60,11 +59,10 @@ $l['ougc_customrep_tab_add'] = 'Add';
 $l['ougc_customrep_tab_add_d'] = 'Add a new custom reputation.';
 $l['ougc_customrep_tab_edit'] = 'Edit';
 $l['ougc_customrep_tab_edit_d'] = 'Edit an existing rating.';
-$l['ougc_customrep_tab_updatecache'] = 'Update Cache';
 
 // Buttons
 $l['ougc_customrep_button_disponder'] = 'Update Order';
-$l['ougc_customrep_button_submit'] = 'Summit';
+$l['ougc_customrep_button_submit'] = 'Submit';
 
 // Form
 $l['ougc_customrep_f_groups'] = 'Groups';

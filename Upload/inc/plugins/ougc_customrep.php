@@ -44,6 +44,19 @@ if(defined('IN_ADMINCP'))
 
 	// Users merge
 	$plugins->add_hook('admin_user_users_merge_commit', 'ougc_customrep_users_merge');
+
+	// Cache manager
+	$funct = create_function('', '
+			control_object($GLOBALS[\'cache\'], \'
+			function update_ougc_customrep()
+			{
+				$GLOBALS[\\\'customrep\\\']->update_cache();
+			}
+		\');
+	');
+	$plugins->add_hook('admin_tools_cache_start', $funct);
+	$plugins->add_hook('admin_tools_cache_rebuild', $funct);
+	unset($funct);
 }
 elseif(defined('THIS_SCRIPT'))
 {
@@ -90,7 +103,7 @@ defined('PLUGINLIBRARY') or define('PLUGINLIBRARY', MYBB_ROOT.'inc/plugins/plugi
 function ougc_customrep_info()
 {
 	global $lang, $customrep;
-	$customrep->lang_load();	
+	$customrep->lang_load();
 
 	return array(
 		'name'          => 'OUGC Custom Reputation',
@@ -1758,8 +1771,13 @@ class OUGC_CustomRep
 
 		$db->update_query('users', array('reputation' => $reputation_count), 'uid=\''.$uid.'\'');
 	}
+}
 
-	// control_object by Zinga Burga from MyBBHacks ( mybbhacks.zingaburga.com ), 1.62
+$GLOBALS['customrep'] = new OUGC_CustomRep;
+
+// control_object by Zinga Burga from MyBBHacks ( mybbhacks.zingaburga.com ), 1.62
+if(!function_exists('control_object'))
+{
 	function control_object(&$obj, $code)
 	{
 		static $cnt = 0;
@@ -1800,10 +1818,8 @@ class OUGC_CustomRep
 	}
 }
 
-$GLOBALS['customrep'] = new OUGC_CustomRep;
-
 // Detect user deletions
-$GLOBALS['customrep']->control_object($db, '
+control_object($db, '
 	function delete_query($table, $where="", $limit="")
 	{
 		if($table == "users" && !$limit)

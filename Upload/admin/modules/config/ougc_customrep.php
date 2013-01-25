@@ -33,8 +33,6 @@ defined('IN_MYBB') or die('Direct initialization of this file is not allowed.');
 // Check requirements
 $customrep->meets_requirements() or $customrep->admin_redirect($customrep->message, true);
 
-$db->delete_query('reputation');
-$db->update_query('users', array('reputation' => 0));
 // Set current url
 $customrep->set_url('index.php?module=config-ougc_customrep');
 
@@ -63,20 +61,10 @@ if($mybb->input['action'] == 'edit')
 		'description'	=> $lang->ougc_customrep_tab_edit_d
 	);
 }
-$sub_tabs['ougc_customrep_updatecache'] = array(
-	'title'			=> $lang->ougc_customrep_tab_updatecache,
-	'link'			=> $customrep->build_url('action=rebuilt_cache')
-);
 
 $page->add_breadcrumb_item($lang->ougc_customrep, $sub_tabs['ougc_customrep_view']['link']);
 
-// Update the cache
-if($mybb->input['action'] == 'rebuilt_cache')
-{
-	$customrep->log_action();
-	$customrep->admin_redirect($lang->ougc_customrep_message_updatecache, !$customrep->update_cache());
-}
-elseif($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
+if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 {
 	$add = ($mybb->input['action'] == 'add' ? true : false);
 
@@ -92,7 +80,7 @@ elseif($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 	{
 		if(!($reputation = $customrep->get_rep($mybb->input['rid'])))
 		{
-			$customrep->admin_redirect($lang->ougc_customrep_message_updatecache, true);
+			$customrep->admin_redirect($lang->ougc_customrep_message_invalidrep, true);
 		}
 
 		$customrep->set_rep_data($reputation['rid']);
@@ -163,7 +151,7 @@ elseif($mybb->input['action'] == 'delete')
 {
 	if(!($reputation = $customrep->get_rep($mybb->input['rid'])))
 	{
-		$customrep->admin_redirect($lang->ougc_customrep_message_updatecache, true);
+		$customrep->admin_redirect($lang->ougc_customrep_message_invalidrep, true);
 	}
 
 	if($mybb->request_method == 'post')
@@ -174,7 +162,6 @@ elseif($mybb->input['action'] == 'delete')
 		}
 
 		$customrep->delete_rep($mybb->input['aid']);
-		$customrep->update_cache();
 		$customrep->log_action();
 		$customrep->update_cache();
 		$customrep->admin_redirect($lang->ougc_customrep_message_deleterep);
