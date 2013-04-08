@@ -1072,15 +1072,22 @@ class OUGC_CustomRep
 	// Ajax requests
 	public $ajax_request = false;
 
+	// Is the plugin active? Default is false
+	public $active = false;
+
 	// Construct the data (?)
 	function __construct()
 	{
 		global $mybb;
 
-		$plugins = $mybb->cache->read('plugins');
+		// Fix: PHP warning on MyBB installation/upgrade
+		if(is_object($mybb->cache))
+		{
+			$plugins = $mybb->cache->read('plugins');
 
-		// Is plugin active?
-		$this->active = isset($plugins['active']['ougc_customrep']);
+			// Is plugin active?
+			$this->active = isset($plugins['active']['ougc_customrep']);
+		}
 
 		if($mybb->settings['use_xmlhttprequest'] && $mybb->settings['ougc_customrep_ajax'])
 		{
