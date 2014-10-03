@@ -43,7 +43,10 @@ $l['ougc_customrep_message_editrep'] = 'The custom reputation was successfully e
 		
 // Header titles
 $l['ougc_customrep_h_image'] = 'Image';
-$l['ougc_customrep_h_image_d'] = 'Small image to identify this custom reputation.';
+$l['ougc_customrep_h_image_d'] = 'Small image to identify this custom reputation.<br/><span class="smalltext">&nbsp;&nbsp;{bburl} -> Forum URL<br />
+&nbsp;&nbsp;{homeurl} -> Home URL<br />
+&nbsp;&nbsp;{imgdir} -> Theme Directory URL
+</span>';
 $l['ougc_customrep_h_name'] = 'Name';
 $l['ougc_customrep_h_name_d'] = 'Short key name to identify this custom reputation (ie: Thank You).';
 $l['ougc_customrep_h_order'] = 'Order';
@@ -87,13 +90,15 @@ $l['ougc_customrep_error_invaliddisporder'] = 'Invalid display order.';
 $l['ougc_customrep_error_invalidreptype'] = 'Invalid reputation type.';
 
 // Settings
-$l['ougc_customrep_s_groups'] = 'Disabled Groups';
-$l['ougc_customrep_s_groups_d'] = 'Comma separated list of groups (GID) that can not use this feature.';
-$l['ougc_customrep_s_forums'] = 'Disabled Forums';
-$l['ougc_customrep_s_forums_d'] = 'Comma separated list of forums (FID) where this feature can not be used in.';
-$l['ougc_customrep_s_firstpost'] = 'First Post Only';
-$l['ougc_customrep_s_firstpost_d'] = 'Whether if enable this feature only for the first post of a thread.';
-$l['ougc_customrep_s_delete'] = 'Allow Deletion';
-$l['ougc_customrep_s_delete_d'] = 'Allow deletion of ratings.';
-$l['ougc_customrep_s_ajax'] = 'Ajax Features';
-$l['ougc_customrep_s_ajax_d'] = 'Whether if enable or disable ajax features.';
+$l['setting_ougc_customrep_groups'] = 'Disabled Groups';
+$l['setting_ougc_customrep_groups_desc'] = 'Comma separated list of groups (GID) that can not use this feature.';
+$l['setting_ougc_customrep_forums'] = 'Disabled Forums';
+$l['setting_ougc_customrep_forums_desc'] = 'Comma separated list of forums (FID) where this feature can not be used in.';
+$l['setting_ougc_customrep_firstpost'] = 'First Post Only';
+$l['setting_ougc_customrep_firstpost_desc'] = 'Whether if enable this feature only for the first post of a thread.';
+$l['setting_ougc_customrep_delete'] = 'Allow Deletion';
+$l['setting_ougc_customrep_delete_desc'] = 'Allow deletion of ratings.';
+$l['setting_ougc_customrep_ajax'] = 'Ajax Features';
+$l['setting_ougc_customrep_ajax_desc'] = 'Whether if enable or disable ajax features.';
+$l['setting_ougc_customrep_perpage'] = 'Multipage Per Page';
+$l['setting_ougc_customrep_perpage_desc'] = 'Maximum number of options to show per page.';

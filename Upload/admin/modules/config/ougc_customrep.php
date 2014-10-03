@@ -37,9 +37,6 @@ $customrep->meets_requirements() or $customrep->admin_redirect($customrep->messa
 $customrep->set_url('index.php?module=config-ougc_customrep');
 
 // Set/load defaults
-$mybb->input['action'] = isset($mybb->input['action']) ? trim($mybb->input['action']) : '';
-$mybb->input['rid'] = isset($mybb->input['rid']) ? (int)$mybb->input['rid'] : 0;
-$mybb->input['page'] = (int)(isset($mybb->input['page']) ? (int)$mybb->input['page'] : 0);
 $customrep->lang_load();
 
 // Page tabs
@@ -53,20 +50,20 @@ $sub_tabs['ougc_customrep_add'] = array(
 	'link'			=> $customrep->build_url('action=add'),
 	'description'	=> $lang->ougc_customrep_tab_add_d
 );
-if($mybb->input['action'] == 'edit')
+if($mybb->get_input('action') == 'edit')
 {
 	$sub_tabs['ougc_customrep_edit'] = array(
 		'title'			=> $lang->ougc_customrep_tab_edit,
-		'link'			=> $customrep->build_url(array('action' => 'edit', 'aid' => $mybb->input['aid'])),
+		'link'			=> $customrep->build_url(array('action' => 'edit', 'rid' => $mybb->get_input('rid', 1))),
 		'description'	=> $lang->ougc_customrep_tab_edit_d
 	);
 }
 
 $page->add_breadcrumb_item($lang->ougc_customrep, $sub_tabs['ougc_customrep_view']['link']);
 
-if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
+if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 {
-	$add = ($mybb->input['action'] == 'add' ? true : false);
+	$add = ($mybb->get_input('action') == 'add' ? true : false);
 
 	if($add)
 	{
@@ -78,7 +75,7 @@ if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 	}
 	else
 	{
-		if(!($reputation = $customrep->get_rep($mybb->input['rid'])))
+		if(!($reputation = $customrep->get_rep($mybb->get_input('rid', 1))))
 		{
 			$customrep->admin_redirect($lang->ougc_customrep_message_invalidrep, true);
 		}
@@ -147,21 +144,21 @@ if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 
 	$page->output_footer();
 }
-elseif($mybb->input['action'] == 'delete')
+elseif($mybb->get_input('action') == 'delete')
 {
-	if(!($reputation = $customrep->get_rep($mybb->input['rid'])))
+	if(!($reputation = $customrep->get_rep($mybb->get_input('rid', 1))))
 	{
 		$customrep->admin_redirect($lang->ougc_customrep_message_invalidrep, true);
 	}
 
 	if($mybb->request_method == 'post')
 	{
-		if(isset($mybb->input['no']) || $mybb->input['my_post_key'] != $mybb->post_code)
+		if(isset($mybb->input['no']) || $mybb->get_input('my_post_key') != $mybb->post_code)
 		{
 			$customrep->admin_redirect();
 		}
 
-		$customrep->delete_rep($mybb->input['aid']);
+		$customrep->delete_rep($mybb->get_input('rid', 1));
 		$customrep->log_action();
 		$customrep->update_cache();
 		$customrep->admin_redirect($lang->ougc_customrep_message_deleterep);
@@ -169,7 +166,7 @@ elseif($mybb->input['action'] == 'delete')
 
 	$page->add_breadcrumb_item($lang->delete);
 
-	$page->output_confirm_action($customrep->build_url(array('action' => 'delete', 'rid' => $mybb->input['rid'], 'my_post_key' => $mybb->post_code)));
+	$page->output_confirm_action($customrep->build_url(array('action' => 'delete', 'rid' => $mybb->get_input('rid', 1))));
 }
 else
 {
@@ -184,7 +181,7 @@ else
 	$table->construct_header($lang->options, array('width' => '10%', 'class' => 'align_center'));
 
 	// Multi-page support
-	$perpage = (int)(isset($mybb->input['perpage']) ? (int)$mybb->input['perpage'] : 10);
+	$perpage = (int)(isset($mybb->input['perpage']) ? $mybb->get_input('perpage', 1) : 10);
 	if($perpage < 1)
 	{
 		$perpage = 10;
@@ -194,9 +191,9 @@ else
 		$perpage = 100;
 	}
 	
-	if($mybb->input['page'] > 0)
+	if($mybb->get_input('page', 1) > 0)
 	{
-		$start = ($mybb->input['page']-1)*$perpage;
+		$start = ($mybb->get_input('page', 1)-1)*$perpage;
 	}
 	else
 	{
@@ -218,7 +215,7 @@ else
 	{
 		$query = $db->simple_select('ougc_customrep', '*', '', array('limit' => $perpage, 'limit_start' => $start, 'order_by' => 'disporder'));
 
-		if($mybb->request_method == 'post' && $mybb->input['action'] == 'updatedisporder')
+		if($mybb->request_method == 'post' && $mybb->get_input('action') == 'updatedisporder')
 		{
 			foreach($mybb->input['disporder'] as $rid => $disporder)
 			{
@@ -233,6 +230,7 @@ else
 		while($reputation = $db->fetch_array($query))
 		{
 			$table->construct_cell('<img src="'.$customrep->get_image($reputation['image'], $reputation['rid']).'" />', array('class' => 'align_center'));
+			
 			$table->construct_cell(htmlspecialchars_uni($reputation['name']));
 			$table->construct_cell($form->generate_text_box('disporder['.$reputation['rid'].']', (int)$reputation['disporder'], array('style' => 'text-align: center; width: 30px;')), array('class' => 'align_center'));
 
@@ -250,7 +248,7 @@ else
 		$customrep->set_url('index.php');
 
 		// Multipage
-		if(($multipage = trim(draw_admin_pagination($mybb->input['page'], $perpage, $repcount, $customrep->build_url(false, 'page')))))
+		if(($multipage = trim(draw_admin_pagination($mybb->get_input('page', 1), $perpage, $repcount, $customrep->build_url(false, 'page')))))
 		{
 			echo $multipage;
 		}
@@ -263,7 +261,7 @@ else
 				$s = '';
 			}
 
-			if($mybb->input['page'] == $p/10)
+			if($mybb->get_input('page', 1) == $p/10)
 			{
 				$limitstring .= $p.$s;
 			}

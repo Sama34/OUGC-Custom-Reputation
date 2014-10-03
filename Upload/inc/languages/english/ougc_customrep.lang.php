@@ -39,26 +39,26 @@ $l['ougc_customrep_error_invalidforum'] = 'Invalid Forum';
 $l['ougc_customrep_error_selftrating'] = 'You can\'t rate your own posts.';
 $l['ougc_customrep_error_closedthread'] = 'You are not allowed to rate closed threads.';
 $l['ougc_customrep_error_invalidrep'] = 'Invalid rating type.';
-$l['ougc_customrep_error_invalidforum'] = 'Invalid forum.';
 $l['ougc_customrep_error_invalidrating'] = 'You are trying to delete a rating that doesn\'t exists.';
 $l['ougc_customrep_error_multiple'] = 'Multiple rating no allowed.';
 
 // Misc page
-$l['ougc_customrep_viewall'] = 'View All';
+$l['ougc_customrep_viewall'] = 'View who rated this.';
 $l['ougc_customrep_popuptitle'] = '{1}: {2}';
 $l['ougc_customrep_popup_empty'] = 'There are currently no ratings for the selected post.';
 $l['ougc_customrep_popup_date'] = '{1} at {2}';
 $l['ougc_customrep_popup_more'] = 'Click to view more.';
-$l['ougc_customrep_popup_latest'] = 'Currently viewing the latest {1} reputations.';
+$l['ougc_customrep_popup_latest'] = 'Currently {1} ratings.';
 $l['ougc_customrep_popup_fullview'] = 'View full list.';
 $l['ougc_customrep_close'] = 'Close';
 
 // UI variables
 $l['ougc_customrep_viewlatest'] = 'View Latest';
 $l['ougc_customrep_viewlatest_noajax'] = 'View Full List';
-$l['ougc_customrep_vote'] = 'Vote: ';
-$l['ougc_customrep_voted'] = 'Voted: ';
-$l['ougc_customrep_delete'] = 'Delete: ';
+$l['ougc_customrep_vote'] = '{1} this post.';
+$l['ougc_customrep_voted'] = 'You rated this.';
+$l['ougc_customrep_voted_undo'] = 'Undo your rating to rate again.';
+$l['ougc_customrep_delete'] = 'Undo {1} this post.';
 
 // Multi-lang support for individual rate types
 #$l['ougc_customrep_name_RID'] = 'Name';

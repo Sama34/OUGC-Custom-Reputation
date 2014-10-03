@@ -25,117 +25,44 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
 
-function OUGC_CustomReputation(tid, pid, postcode, rid, del)
-{
-	OUGC_CustomReputationSpinner();
-
-	var deleteit = '';
-	if(del == 1)
+var OUGC_CustomReputation = {
+	init: function()
 	{
-		deleteit = '&delete=1';
-	}
-	new Ajax.Request('showthread.php?tid=tid&action=customrep&pid=' + pid + '&my_post_key=' + postcode + '&rid=' + rid + '&ajax=1' + deleteit, {onComplete:OUGC_CustomReputationDo});
-	return false;
-}
-
-function OUGC_CustomReputationDo(request)
-{
-	if(error = request.responseText.match(/<error>(.*)<\/error>/))
+		$(document).ready(function(){
+		});
+	},
+	Add: function(tid, pid, postcode, rid, del)
 	{
-		OUGC_CustomReputationSpinner(true);
-		alert("An error occurred when rating the post.\n\n" + error[1]);
-		return false;
-	}
-	else
-	{
-		content = request.responseText.split('|-_-|');
-		if(content[0] != 'success')
+		var deleteit = '';
+		if(del == 1)
 		{
-			OUGC_CustomReputationSpinner(true);
-			alert('An error occurred when rating the post.');
-			return false;
+			deleteit = '&delete=1';
 		}
-		else
+
+		$.ajax(
 		{
-			OUGC_CustomReputationSpinner(true);
+			url: 'showthread.php?tid=' + tid + '&action=customrep&pid=' + pid + '&my_post_key=' + postcode + '&rid=' + rid + deleteit,
+			type: 'post',
+			dataType: 'json',
+			success: function (request)
+			{
+				if(request.errors)
+				{
+					alert(request.errors);
+					return false;
+				}
+				if(request.success == 1)
+				{
+					$('#customrep_' + parseInt(request.pid)).replaceWith(request.content);
+					$('#customrep_rep_' + parseInt(request.pid)).replaceWith(request.userreputation);
 
-			var value = document.getElementById('customrep_' + parseInt(content[1]));
-			value.innerHTML = content[2];
-
-			var y = document.getElementById('customrep_rep_' + parseInt(content[1]));
-			y.innerHTML = content[3];
-
-			return true;
-		}
-	}
-}
-
-function OUGC_CustomReputationPopUp(tid, pid, rid, page)
-{
-	OUGC_CustomReputationSpinner();
-
-	var multipage = '';
-	if(page)
+					return true;
+				}
+			}
+		});
+	},
+	PopUp: function(tid, pid, postcode, rid, del)
 	{
-		multipage = '&page=' + page;
-	}
-	new Ajax.Request('showthread.php?tid=' + tid + '&pid=' + pid + '&action=customreppu&rid=' + rid + '&ajax=1' + multipage, {onComplete:OUGC_CustomReputationPopUpResponse});
-	return false;
-}
-
-function OUGC_CustomReputationPopUpResponse(request)
-{
-	if(error = request.responseText.match(/<error>(.*)<\/error>/))
-	{
-		OUGC_CustomReputationSpinner(true);
-		alert('An error occurred when opening the window.\n\n' + error[1]);
-		return false;
-	}
-	else
-	{
-		content = request.responseText.split('|-_-|');
-		if(content[0] != 'success')
-		{
-			OUGC_CustomReputationSpinner(true);
-			alert('An error occurred when opening the window.');
-			return false;
-		}
-		else
-		{
-			OUGC_CustomReputationSpinner(true);
-			OUGC_CustomReputationPopUpClose();
-
-			var value = document.createElement('div');
-			value.id = window.ougc_modal_key;
-			value.className = 'customrep_popup';
-			value.innerHTML = content[1];
-			document.body.appendChild(value);
-			$(value.id).style.display = 'block';
-
-			return true;
-		}
-	}
-}
-
-function OUGC_CustomReputationPopUpClose()
-{
-	window.ougc_modal_key = 'customrep_popup';
-
-	if($(window.ougc_modal_key))
-	{
-		Element.remove(window.ougc_modal_key);
-	}
-}
-
-function OUGC_CustomReputationSpinner(remove)
-{
-	
-	if(remove)
-	{
-		window.ougc_spinner.destroy();
-	}
-	else
-	{
-		window.ougc_spinner = new ActivityIndicator('body', {image: imagepath + '/spinner_big.gif'});
-	}
+		MyBB.popupWindow('showthread.php?tid=' + tid + '&pid=' + pid + '&action=customreppu&rid=' + rid + '&my_post_key=1' + postcode);
+	},
 }
