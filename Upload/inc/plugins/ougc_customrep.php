@@ -111,8 +111,8 @@ function ougc_customrep_info()
 		'website'		=> 'http://mods.mybb.com/view/ougc-custom-reputation',
 		'author'		=> 'Omar G.',
 		'authorsite'	=> 'http://omarg.me',
-		'version'		=> '1.8',
-		'versioncode'	=> 1800,
+		'version'		=> '1.8.1',
+		'versioncode'	=> 1801,
 		'compatibility'	=> '18*',
 		'guid' 			=> '',
 		'pl'			=> array(
