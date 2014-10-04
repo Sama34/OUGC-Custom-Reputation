@@ -12,8 +12,13 @@ Allow users rate posts with custom post reputations.
 ### Installation
 1. Upload the content of the "upload" folder to your MyBB root folder.
 2. Go to ACP -> Configuration -> Plugins and activate/install the plugin.
-3. Edit general settings from "OUGC Pages".
+3. Edit general settings from "OUGC Custom Reputation".
 4. __Enjoy!__
+
+### Update
+1. Deactivate old version.
+2. Follow installation instructions.
+3. __Enjoy!__
 
 ### Support
 Please visit [MyBB Plugins](http://forums.mybb-plugins.com/Forum-Free-Plugins--29 "Visit MyBB Plugins") for premium support. Free support may be received in the [MyBB Community](http://community.mybb.com "Visit MyBB Community")
