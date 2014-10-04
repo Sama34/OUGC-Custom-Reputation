@@ -2,13 +2,13 @@
 
 /***************************************************************************
  *
- *   OUGC Custom Reputation plugin (/inc/plugins/ougc_annbars.php)
- *	 Author: Omar Gonzalez
- *   Copyright: © 2012 Omar Gonzalez
- *   
- *   Website: http://community.mybb.com/user-25096.html
+ *	OUGC Custom Reputation plugin (/inc/plugins/ougc_customrep.php)
+ *	Author: Omar Gonzalez
+ *	Copyright: Â© 2012 - 2014 Omar Gonzalez
  *
- *   Allow users rate posts with custom post reputations.
+ *	Website: http://omarg.me
+ *
+ *	Allow users rate posts with custom post reputations.
  *
  ***************************************************************************
  
@@ -17,12 +17,12 @@
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-	
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
@@ -37,9 +37,6 @@ $customrep->meets_requirements() or $customrep->admin_redirect($customrep->messa
 $customrep->set_url('index.php?module=config-ougc_customrep');
 
 // Set/load defaults
-$mybb->input['action'] = isset($mybb->input['action']) ? trim($mybb->input['action']) : '';
-$mybb->input['rid'] = isset($mybb->input['rid']) ? (int)$mybb->input['rid'] : 0;
-$mybb->input['page'] = (int)(isset($mybb->input['page']) ? (int)$mybb->input['page'] : 0);
 $customrep->lang_load();
 
 // Page tabs
@@ -53,20 +50,20 @@ $sub_tabs['ougc_customrep_add'] = array(
 	'link'			=> $customrep->build_url('action=add'),
 	'description'	=> $lang->ougc_customrep_tab_add_d
 );
-if($mybb->input['action'] == 'edit')
+if($mybb->get_input('action') == 'edit')
 {
 	$sub_tabs['ougc_customrep_edit'] = array(
 		'title'			=> $lang->ougc_customrep_tab_edit,
-		'link'			=> $customrep->build_url(array('action' => 'edit', 'aid' => $mybb->input['aid'])),
+		'link'			=> $customrep->build_url(array('action' => 'edit', 'rid' => $mybb->get_input('rid', 1))),
 		'description'	=> $lang->ougc_customrep_tab_edit_d
 	);
 }
 
 $page->add_breadcrumb_item($lang->ougc_customrep, $sub_tabs['ougc_customrep_view']['link']);
 
-if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
+if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 {
-	$add = ($mybb->input['action'] == 'add' ? true : false);
+	$add = ($mybb->get_input('action') == 'add' ? true : false);
 
 	if($add)
 	{
@@ -78,7 +75,7 @@ if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 	}
 	else
 	{
-		if(!($reputation = $customrep->get_rep($mybb->input['rid'])))
+		if(!($reputation = $customrep->get_rep($mybb->get_input('rid', 1))))
 		{
 			$customrep->admin_redirect($lang->ougc_customrep_message_invalidrep, true);
 		}
@@ -90,10 +87,68 @@ if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 		$page->output_nav_tabs($sub_tabs, 'ougc_customrep_edit');
 	}
 
+	foreach(array('groups', 'forums') as $key)
+	{
+		if(!isset($mybb->input[$key]) && isset($reputation[$key]))
+		{
+			if(isset($reputation[$key]))
+			{
+				$mybb->input[$key] = $reputation[$key];
+			}
+			else
+			{
+				$mybb->input[$key] = '';
+			}
+		}
+		unset($key);
+	}
+
+	$group_checked = array('all' => '', 'custom' => '', 'none' => '');
+	if($mybb->get_input('groups_type') == 'all' || $mybb->get_input('groups') == -1)
+	{
+		$mybb->input['groups_type'] = 'all';
+		$mybb->input['groups'] = -1;
+		$group_checked['all'] = 'checked="checked"';
+	}
+	elseif($mybb->get_input('groups_type') == 'none' || $mybb->get_input('groups') == '' && !$mybb->get_input('groups', 2))
+	{
+		$mybb->input['groups_type'] = 'none';
+		$mybb->input['groups'] = '';
+		$group_checked['none'] = 'checked="checked"';
+	}
+	else
+	{
+		$mybb->input['groups_type'] = 'custom';
+		$mybb->input['groups'] = $customrep->clean_array($mybb->input['groups'], false);
+		$group_checked['custom'] = 'checked="checked"';
+	}
+
+	$forum_checked = array('all' => '', 'custom' => '', 'none' => '');
+	if($mybb->get_input('forums_type') == 'all' || $mybb->get_input('forums') == -1)
+	{
+		$mybb->input['forums_type'] = 'all';
+		$mybb->input['forums'] = -1;
+		$forum_checked['all'] = 'checked="checked"';
+	}
+	elseif($mybb->get_input('forums_type') == 'none' || $mybb->get_input('forums') == '' && !$mybb->get_input('forums', 2))
+	{
+		$mybb->input['forums_type'] = 'none';
+		$mybb->input['forums'] = '';
+		$forum_checked['none'] = 'checked="checked"';
+	}
+	else
+	{
+		$mybb->input['forums_type'] = 'custom';
+		$mybb->input['forums'] = $customrep->clean_array($mybb->input['forums'], false);
+		$forum_checked['custom'] = 'checked="checked"';
+	}
+
 	if($mybb->request_method == 'post')
 	{
 		if($customrep->validate_rep_data())
 		{
+			$customrep->rep_data['groups'] = $mybb->input['groups'];
+			$customrep->rep_data['forums'] = $mybb->input['forums'];
 			if($add)
 			{
 				$customrep->insert_rep($customrep->rep_data);
@@ -134,8 +189,49 @@ if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 		'0'	=> $lang->ougc_customrep_h_reptype_neu,
 		'1'	=> $lang->ougc_customrep_h_reptype_pos
 	), $customrep->rep_data['reptype']));
-	$form_container->output_row($lang->ougc_customrep_f_groups, $lang->ougc_customrep_f_groups_d, $form->generate_group_select('groups[]', $customrep->rep_data['groups'], array('multiple' => 1, 'size' => 5)));
-	$form_container->output_row($lang->ougc_customrep_f_forums, $lang->ougc_customrep_f_forums_d, $form->generate_forum_select('forums[]', $customrep->rep_data['forums'], array('multiple' => 1, 'size' => 5)));
+
+	ougc_print_selection_javascript();
+
+	$groups_select = "
+	<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%\">
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"groups_type\" value=\"all\" {$group_checked['all']} class=\"groups_forums_groups_check\" onclick=\"checkAction('groups');\" style=\"vertical-align: middle;\" /> <strong>{$lang->all_groups}</strong></label></dt>
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"groups_type\" value=\"custom\" {$group_checked['custom']} class=\"groups_forums_groups_check\" onclick=\"checkAction('groups');\" style=\"vertical-align: middle;\" /> <strong>{$lang->select_groups}</strong></label></dt>
+		<dd style=\"margin-top: 4px;\" id=\"groups_forums_groups_custom\" class=\"groups_forums_groups\">
+			<table cellpadding=\"4\">
+				<tr>
+					<td valign=\"top\"><small>{$lang->groups_colon}</small></td>
+					<td>".$form->generate_group_select('groups[]', $mybb->get_input('groups', 2), array('multiple' => true, 'size' => 5))."</td>
+				</tr>
+			</table>
+		</dd>
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"groups_type\" value=\"none\" {$group_checked['none']} class=\"groups_forums_groups_check\" onclick=\"checkAction('groups');\" style=\"vertical-align: middle;\" /> <strong>{$lang->none}</strong></label></dt>
+	</dl>
+	<script type=\"text/javascript\">
+		checkAction('groups');
+	</script>";
+
+	$form_container->output_row($lang->ougc_customrep_f_groups, $lang->ougc_customrep_f_groups_d, $groups_select, '', array(), array('id' => 'row_groups'));
+
+	$forums_select = "
+	<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%\">
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"forums_type\" value=\"all\" {$forum_checked['all']} class=\"forums_forums_groups_check\" onclick=\"checkAction('forums');\" style=\"vertical-align: middle;\" /> <strong>{$lang->all_forums}</strong></label></dt>
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"forums_type\" value=\"custom\" {$forum_checked['custom']} class=\"forums_forums_groups_check\" onclick=\"checkAction('forums');\" style=\"vertical-align: middle;\" /> <strong>{$lang->select_forums}</strong></label></dt>
+		<dd style=\"margin-top: 4px;\" id=\"forums_forums_groups_custom\" class=\"forums_forums_groups\">
+			<table cellpadding=\"4\">
+				<tr>
+					<td valign=\"top\"><small>{$lang->forums_colon}</small></td>
+					<td>".$form->generate_forum_select('forums[]', $mybb->get_input('forums', 2), array('multiple' => true, 'size' => 5))."</td>
+				</tr>
+			</table>
+		</dd>
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"forums_type\" value=\"none\" {$forum_checked['none']} class=\"forums_forums_groups_check\" onclick=\"checkAction('forums');\" style=\"vertical-align: middle;\" /> <strong>{$lang->none}</strong></label></dt>
+	</dl>
+	<script type=\"text/javascript\">
+		checkAction('forums');
+	</script>";
+
+	$form_container->output_row($lang->ougc_customrep_f_forums, $lang->ougc_customrep_f_forums_d, $forums_select, '', array(), array('id' => 'row_forums'));
+
 	$form_container->output_row($lang->ougc_customrep_h_order, $lang->ougc_customrep_f_disporder_d, $form->generate_text_box('disporder', $customrep->rep_data['disporder'], array('style' => 'text-align: center; width: 30px;" maxlength="5')));
 	$form_container->output_row($lang->ougc_customrep_h_visible, $lang->ougc_customrep_f_visible_d, $form->generate_yes_no_radio('visible', $customrep->rep_data['visible']));
 
@@ -147,21 +243,21 @@ if($mybb->input['action'] == 'add' || $mybb->input['action'] == 'edit')
 
 	$page->output_footer();
 }
-elseif($mybb->input['action'] == 'delete')
+elseif($mybb->get_input('action') == 'delete')
 {
-	if(!($reputation = $customrep->get_rep($mybb->input['rid'])))
+	if(!($reputation = $customrep->get_rep($mybb->get_input('rid', 1))))
 	{
 		$customrep->admin_redirect($lang->ougc_customrep_message_invalidrep, true);
 	}
 
 	if($mybb->request_method == 'post')
 	{
-		if(isset($mybb->input['no']) || $mybb->input['my_post_key'] != $mybb->post_code)
+		if(isset($mybb->input['no']) || $mybb->get_input('my_post_key') != $mybb->post_code)
 		{
 			$customrep->admin_redirect();
 		}
 
-		$customrep->delete_rep($mybb->input['aid']);
+		$customrep->delete_rep($mybb->get_input('rid', 1));
 		$customrep->log_action();
 		$customrep->update_cache();
 		$customrep->admin_redirect($lang->ougc_customrep_message_deleterep);
@@ -169,7 +265,7 @@ elseif($mybb->input['action'] == 'delete')
 
 	$page->add_breadcrumb_item($lang->delete);
 
-	$page->output_confirm_action($customrep->build_url(array('action' => 'delete', 'rid' => $mybb->input['rid'], 'my_post_key' => $mybb->post_code)));
+	$page->output_confirm_action($customrep->build_url(array('action' => 'delete', 'rid' => $mybb->get_input('rid', 1))));
 }
 else
 {
@@ -184,7 +280,7 @@ else
 	$table->construct_header($lang->options, array('width' => '10%', 'class' => 'align_center'));
 
 	// Multi-page support
-	$perpage = (int)(isset($mybb->input['perpage']) ? (int)$mybb->input['perpage'] : 10);
+	$perpage = (int)(isset($mybb->input['perpage']) ? $mybb->get_input('perpage', 1) : 10);
 	if($perpage < 1)
 	{
 		$perpage = 10;
@@ -194,9 +290,9 @@ else
 		$perpage = 100;
 	}
 	
-	if($mybb->input['page'] > 0)
+	if($mybb->get_input('page', 1) > 0)
 	{
-		$start = ($mybb->input['page']-1)*$perpage;
+		$start = ($mybb->get_input('page', 1)-1)*$perpage;
 	}
 	else
 	{
@@ -218,7 +314,7 @@ else
 	{
 		$query = $db->simple_select('ougc_customrep', '*', '', array('limit' => $perpage, 'limit_start' => $start, 'order_by' => 'disporder'));
 
-		if($mybb->request_method == 'post' && $mybb->input['action'] == 'updatedisporder')
+		if($mybb->request_method == 'post' && $mybb->get_input('action') == 'updatedisporder')
 		{
 			foreach($mybb->input['disporder'] as $rid => $disporder)
 			{
@@ -233,6 +329,7 @@ else
 		while($reputation = $db->fetch_array($query))
 		{
 			$table->construct_cell('<img src="'.$customrep->get_image($reputation['image'], $reputation['rid']).'" />', array('class' => 'align_center'));
+			
 			$table->construct_cell(htmlspecialchars_uni($reputation['name']));
 			$table->construct_cell($form->generate_text_box('disporder['.$reputation['rid'].']', (int)$reputation['disporder'], array('style' => 'text-align: center; width: 30px;')), array('class' => 'align_center'));
 
@@ -250,7 +347,7 @@ else
 		$customrep->set_url('index.php');
 
 		// Multipage
-		if(($multipage = trim(draw_admin_pagination($mybb->input['page'], $perpage, $repcount, $customrep->build_url(false, 'page')))))
+		if(($multipage = trim(draw_admin_pagination($mybb->get_input('page', 1), $perpage, $repcount, $customrep->build_url(false, 'page')))))
 		{
 			echo $multipage;
 		}
@@ -263,7 +360,7 @@ else
 				$s = '';
 			}
 
-			if($mybb->input['page'] == $p/10)
+			if($mybb->get_input('page', 1) == $p/10)
 			{
 				$limitstring .= $p.$s;
 			}
