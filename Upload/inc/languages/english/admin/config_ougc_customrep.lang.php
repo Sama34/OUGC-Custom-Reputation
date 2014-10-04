@@ -74,20 +74,14 @@ $l['ougc_customrep_f_forums'] = 'Forums';
 $l['ougc_customrep_f_forums_d'] = 'Select the forums where this custom reputation can used in.';
 $l['ougc_customrep_f_disporder_d'] = 'Order on which this custom reputation will be proccessed.';
 $l['ougc_customrep_f_visible_d'] = 'Whether if to enable or disable this custom reputation.';
-$l['ougc_customrep_h_reptype'] = 'Reputation Type';
-$l['ougc_customrep_h_reptype_d'] = 'How does this custom reputation affect users\'s reputation.';
-
-// Rep types
-$l['ougc_customrep_h_reptype_null'] = 'Disable';
-$l['ougc_customrep_h_reptype_pos'] = ' - Positive';
-$l['ougc_customrep_h_reptype_neu'] = ' - Neutral';
-$l['ougc_customrep_h_reptype_neg'] = ' - Negative';
+$l['ougc_customrep_h_reptype'] = 'Reputation Level';
+$l['ougc_customrep_h_reptype_d'] = 'How does this custom reputation affect users\'s reputation. Empty to disable.';
 
 // Validation
 $l['ougc_customrep_error_invalidname'] = 'Invalid name.';
 $l['ougc_customrep_error_invalidimage'] = 'Invalid image.';
 $l['ougc_customrep_error_invaliddisporder'] = 'Invalid display order.';
-$l['ougc_customrep_error_invalidreptype'] = 'Invalid reputation type.';
+$l['ougc_customrep_error_invalidreptype'] = 'Invalid reputation level.';
 
 // Settings
 $l['setting_ougc_customrep_groups'] = 'Disabled Groups';

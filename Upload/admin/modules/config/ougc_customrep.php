@@ -183,12 +183,7 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 	$form_container->output_row($lang->ougc_customrep_h_image, $lang->ougc_customrep_h_image_d, $form->generate_text_box('image', $customrep->rep_data['image']));
 
 	// TODO: Allow multiple reputations (+2, -1, +n, -n)
-	$form_container->output_row($lang->ougc_customrep_h_reptype, $lang->ougc_customrep_h_reptype_d, $form->generate_select_box('reptype', array(
-		''	=> $lang->ougc_customrep_h_reptype_null,
-		'-1'	=> $lang->ougc_customrep_h_reptype_neg,
-		'0'	=> $lang->ougc_customrep_h_reptype_neu,
-		'1'	=> $lang->ougc_customrep_h_reptype_pos
-	), $customrep->rep_data['reptype']));
+	$form_container->output_row($lang->ougc_customrep_h_reptype, $lang->ougc_customrep_h_reptype_d, $form->generate_text_box('reptype', $customrep->rep_data['reptype']));
 
 	ougc_print_selection_javascript();
 

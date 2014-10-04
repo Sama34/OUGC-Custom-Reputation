@@ -655,7 +655,7 @@ function ougc_customrep_delete_reputation()
 			// Delete the specified reputation & log
 			$customrep->delete_log($reputation['lid']);
 
-			global $uid, $user;
+			global $uid, $user, $lang;
 
 			// Create moderator log
 			log_moderator_action(array('uid' => $user['uid'], 'username' => $user['username']), $lang->sprintf($lang->delete_reputation_log, $reputation['username'], $reputation['adduid']));
@@ -1434,7 +1434,8 @@ class OUGC_CustomRep
 			$insert_data['visible'] = (int)$data['visible'];
 		}
 
-		if($data['reptype'] !== '')
+		$insert_data['reptype'] = '';
+		if($data['reptype'] != '')
 		{
 			$insert_data['reptype'] = (int)$data['reptype'];
 		}
@@ -1543,7 +1544,7 @@ class OUGC_CustomRep
 			$valid = false;
 		}
 
-		if($this->rep_data['reptype'] !== '' && !is_numeric($this->rep_data['reptype']))
+		if($this->rep_data['reptype'] !== '' && !is_numeric($this->rep_data['reptype']) || $this->rep_data['reptype']{3})
 		{
 			$this->validate_errors[] = $lang->ougc_customrep_error_invalidreptype;
 			$valid = false;
