@@ -2,13 +2,13 @@
 
 /***************************************************************************
  *
- *   OUGC Custom Reputation plugin (/inc/languages/english/config_ougc_customrep.lang.php)
- *	 Author: Omar Gonzalez
- *   Copyright: © 2012 Omar Gonzalez
- *   
- *   Website: http://community.mybb.com/user-25096.html
+ *	OUGC Custom Reputation plugin (/inc/languages/english/config_ougc_customrep.lang.php)
+ *	Author: Omar Gonzalez
+ *	Copyright: Â© 2012 - 2014 Omar Gonzalez
  *
- *   Allow users rate posts with custom post reputations.
+ *	Website: http://omarg.me
+ *
+ *	Allow users rate posts with custom post reputations.
  *
  ***************************************************************************
  
@@ -17,12 +17,12 @@
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-	
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
@@ -69,9 +69,9 @@ $l['ougc_customrep_button_submit'] = 'Submit';
 
 // Form
 $l['ougc_customrep_f_groups'] = 'Groups';
-$l['ougc_customrep_f_groups_d'] = 'Select the groups that can use this custom reputation. (none for all)';
+$l['ougc_customrep_f_groups_d'] = 'Select the groups that can use this custom reputation.';
 $l['ougc_customrep_f_forums'] = 'Forums';
-$l['ougc_customrep_f_forums_d'] = 'Select the forums where this custom reputation can used in. (none for all)';
+$l['ougc_customrep_f_forums_d'] = 'Select the forums where this custom reputation can used in.';
 $l['ougc_customrep_f_disporder_d'] = 'Order on which this custom reputation will be proccessed.';
 $l['ougc_customrep_f_visible_d'] = 'Whether if to enable or disable this custom reputation.';
 $l['ougc_customrep_h_reptype'] = 'Reputation Type';

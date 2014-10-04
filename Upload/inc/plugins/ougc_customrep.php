@@ -2,13 +2,13 @@
 
 /***************************************************************************
  *
- *   OUGC Custom Reputation plugin (/inc/plugins/ougc_customrep.php)
- *	 Author: Omar Gonzalez
- *   Copyright: © 2012 Omar Gonzalez
- *   
- *   Website: http://community.mybb.com/user-25096.html
+ *	OUGC Custom Reputation plugin (/inc/plugins/ougc_customrep.php)
+ *	Author: Omar Gonzalez
+ *	Copyright: Â© 2012 - 2014 Omar Gonzalez
  *
- *   Allow users rate posts with custom post reputations.
+ *	Website: http://omarg.me
+ *
+ *	Allow users rate posts with custom post reputations.
  *
  ***************************************************************************
  
@@ -17,12 +17,12 @@
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-	
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
@@ -84,7 +84,7 @@ else
 				$templatelist = '';
 			}
 
-			$templatelist .= 'ougccustomrep, ougccustomrep_rep, ougccustomrep_rep_voted, ougccustomrep_rep_number, ougccustomrep_rep_img, ougccustomrep_headerinclude, postbit, postbit_classic'; // somehow the postbit templates are not being cached
+			$templatelist .= 'ougccustomrep_headerinclude, ougccustomrep_rep_number, ougccustomrep_rep_img, ougccustomrep_rep, ougccustomrep, ougccustomrep_rep_voted';
 			break;
 		case 'reputation.php':
 			$plugins->add_hook('reputation_start', 'ougc_customrep_delete_reputation');
@@ -109,14 +109,16 @@ function ougc_customrep_info()
 		'name'          => 'OUGC Custom Reputation',
 		'description'   => $lang->ougc_customrep_d,
 		'website'		=> 'http://mods.mybb.com/view/ougc-custom-reputation',
-		'author'		=> 'Omar Gonzalez',
-		'authorsite'	=> 'http://community.mybb.com/user-25096.html',
-		'version'		=> '1.1',
-		'versioncode'	=> 1100,
+		'author'		=> 'Omar G.',
+		'authorsite'	=> 'http://omarg.me',
+		'version'		=> '1.8',
+		'versioncode'	=> 1800,
 		'compatibility'	=> '18*',
-		'guid' 			=> '9c6ae7c76e57f5edea5aa4697e8b064c',
-		'pl_version' 	=> 11,
-		'pl_url'		=> 'http://mods.mybb.com/view/pluginlibrary'
+		'guid' 			=> '',
+		'pl'			=> array(
+			'version'	=> 12,
+			'url'		=> 'http://mods.mybb.com/view/pluginlibrary'
+		)
 	);
 }
 
@@ -131,7 +133,7 @@ function ougc_customrep_activate()
  *
  *   OUGC Custom Reputation (CACHE FILE)
  *	 Author: Omar Gonzalez
- *   Copyright: © 2012 Omar Gonzalez
+ *   Copyright: Â© 2012 Omar Gonzalez
  *   
  *   Website: http://community.mybb.com/user-25096.html
  *
@@ -376,6 +378,16 @@ function ougc_customrep_install()
 	);
 
 	$db->add_column('reputation', 'lid', 'int NOT NULL DEFAULT \'0\'');
+
+	// Add a default reputation type
+	$customrep->insert_rep(array(
+		'name'	=> 'Like',
+		'image'	=> '{bburl}/images/ougc_customrep/default.png',
+		'groups'	=> -1,
+		'forums'	=> -1,
+		'disporder'	=> 1,
+		'visible'	=> 1,
+	));
 }
 
 // _is_installed function
@@ -490,10 +502,10 @@ function ougc_customrep_postbit(&$post)
 
 		$customrep->set_forum($fid);
 
-		if(!isset($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')]))
+		/*if(!isset($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')]))
 		{
 			$templates->get('postbit'.($settings['postlayout'] == 'classic' ? '_classic' : ''));
-		}
+		}*/
 		#_dump($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')]);
 
 		if(!$customrep->allowed_forum/* || !my_strpos($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')], '{$post[\'customrep\']}')*/)
@@ -758,7 +770,7 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 				eval('$image = "'.$templates->get('ougccustomrep_rep_img', 1, 0).'";');
 			}
 		}
-		elseif($customrep->is_member($reputation['groups'])/* && $mybb->settings['ougc_customrep_groups'] != -1 && (!$mybb->settings['ougc_customrep_groups'] || !$customrep->is_member($mybb->settings['ougc_customrep_groups']))*/ && $customrep->post['uid'] != $mybb->user['uid'])
+		elseif(($reputation['groups'] == -1 || ($reputation['groups'] && $customrep->is_member($reputation['groups'])))/* && $mybb->settings['ougc_customrep_groups'] != -1 && (!$mybb->settings['ougc_customrep_groups'] || !$customrep->is_member($mybb->settings['ougc_customrep_groups']))*/ && $customrep->post['uid'] != $mybb->user['uid'])
 		{//TODO
 			$lang_val = $lang->sprintf($lang->ougc_customrep_vote, $reputation['name']);
 			eval('$image = "'.$templates->get('ougccustomrep_rep_img', 1, 0).'";');
@@ -841,7 +853,7 @@ function ougc_customrep_request()
 		}
 
 		// Save four queries here
-		$templates->cache('ougccustomrep_misc_row, ougccustomrep_misc_error, ougccustomrep_misc_ajax_fullview, ougccustomrep_misc_ajax, ougccustomrep_misc, ougccustomrep_popup_error, ougccustomrep_popup_ajax, ougccustomrep_popup');
+		$templates->cache('ougccustomrep_misc_row, ougccustomrep_misc_error, ougccustomrep_misc_multipage, ougccustomrep_misc, ougccustomrep_postbit_reputation');
 
 		// the ide here is to allow multipage on both, the ajax window as well as the no-ajax one.
 		// Ajax one mulipage works replacing the table content with the new query result, this of course means a new template that probably will end being using it for the not-ajax version as well..
@@ -996,7 +1008,7 @@ function ougc_customrep_request()
 		error($lang->ougc_customrep_error_invalidrep);
 	}
 
-	if(!$customrep->is_member($reputation['groups']))
+	if($reputation['groups'] == '' || ($reputation['groups'] != -1 && !$customrep->is_member($reputation['groups'])))
 	{
 		error($lang->ougc_customrep_error_nopermission);
 	}
@@ -1171,26 +1183,25 @@ class OUGC_CustomRep
 	{
 		global $PL;
 
+		$info = ougc_customrep_info();
+
 		if(!file_exists(PLUGINLIBRARY))
 		{
 			global $lang;
 			$this->lang_load();
 
-			$info = ougc_customrep_info();
-			$this->message = $lang->sprintf($lang->ougc_customrep_plreq, $info['pl_url'], $info['pl_version']);
+			$this->message = $lang->sprintf($lang->ougc_customrep_plreq, $info['pl']['url'], $info['pl']['version']);
 			return false;
 		}
 
-		$info = ougc_customrep_info();
-
 		$PL or require_once PLUGINLIBRARY;
 
-		if($PL->version < $info['pl_version'])
+		if($PL->version < $info['pl']['version'])
 		{
 			global $lang;
 			$this->lang_load();
 
-			$this->message = $lang->sprintf($lang->ougc_customrep_plold, $PL->version, $info['pl_version'], $info['pl_url']);
+			$this->message = $lang->sprintf($lang->ougc_customrep_plold, $PL->version, $info['pl']['version'], $info['pl']['url']);
 			return false;
 		}
 
@@ -1393,14 +1404,24 @@ class OUGC_CustomRep
 			$insert_data['image'] = $db->escape_string($data['image']);
 		}
 
-		if(isset($data['groups']) && is_array($data['groups']))
+		if(isset($data['groups']))
 		{
-			$insert_data['groups'] = $db->escape_string($this->clean_array($data['groups']));
+			if(is_array($data['groups']))
+			{
+				$data['groups'] = $this->clean_array($data['groups']);
+			}
+
+			$insert_data['groups'] = $db->escape_string($data['groups']);
 		}
 
-		if(isset($data['forums']) && is_array($data['forums']))
+		if(isset($data['forums']))
 		{
-			$insert_data['forums'] = $db->escape_string($this->clean_array($data['forums']));
+			if(is_array($data['forums']))
+			{
+				$data['forums'] = $this->clean_array($data['forums']);
+			}
+
+			$insert_data['forums'] = $db->escape_string($data['forums']);
 		}
 
 		if(isset($data['disporder']))
@@ -1486,6 +1507,10 @@ class OUGC_CustomRep
 				if(isset($this->rep_data[$key]))
 				{
 					$this->rep_data[$key] = $value;
+					if($key == 'groups' || $key == 'forums')
+					{
+						$this->rep_data[$key] = $this->clean_array($this->rep_data[$key]);
+					}
 				}
 			}
 		}
@@ -1588,7 +1613,7 @@ class OUGC_CustomRep
 
 			foreach($this->cache['_reps'] as $rid => &$rep)
 			{
-				if($rep['forums'] && !in_array($fid, $this->clean_array($rep['forums'], false)))
+				if($rep['forums'] == '' || ($rep['forums'] != -1 && !in_array($fid, $this->clean_array($rep['forums'], false))))
 				{
 					unset($this->cache['_reps'][$rid]);
 					continue;
@@ -1877,6 +1902,46 @@ if(!function_exists('control_object'))
 			}
 		}
 		// else not a valid object or PHP serialize has changed
+	}
+}
+
+if(!function_exists('ougc_print_selection_javascript'))
+{
+	function ougc_print_selection_javascript()
+	{
+		static $already_printed = false;
+
+		if($already_printed)
+		{
+			return;
+		}
+
+		$already_printed = true;
+
+		echo "<script type=\"text/javascript\">
+		function checkAction(id)
+		{
+			var checked = '';
+
+			$('.'+id+'_forums_groups_check').each(function(e, val)
+			{
+				if($(this).prop('checked') == true)
+				{
+					checked = $(this).val();
+				}
+			});
+
+			$('.'+id+'_forums_groups').each(function(e)
+			{
+				$(this).hide();
+			});
+
+			if($('#'+id+'_forums_groups_'+checked))
+			{
+				$('#'+id+'_forums_groups_'+checked).show();
+			}
+		}
+	</script>";
 	}
 }
 
