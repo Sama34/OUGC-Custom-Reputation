@@ -89,10 +89,6 @@ else
 		case 'reputation.php':
 			$plugins->add_hook('reputation_start', 'ougc_customrep_delete_reputation');
 			break;
-		/*case 'misc.php':
-			$plugins->add_hook('goodbyespammer_options', 'ougc_customrep_goodbyespammer');
-			$plugins->add_hook('goodbyespammer_actions', 'ougc_customrep_goodbyespammer_do');
-			break;*/
 	}
 }
 
@@ -201,18 +197,6 @@ function ougc_customrep_activate()
 
 	// Add our settings
 	$PL->settings('ougc_customrep', $lang->ougc_customrep, $lang->ougc_customrep_d, array(
-		/*'groups'	=> array(
-			'title'			=> $lang->setting_ougc_customrep_groups,
-			'description'	=> $lang->setting_ougc_customrep_groups_desc,
-			'optionscode'	=> 'groupselect',
-			'value'			=> '7,1,5',
-		),*/
-		/*'forums'	=> array(
-			'title'			=> $lang->setting_ougc_customrep_forums,
-			'description'	=> $lang->setting_ougc_customrep_forums_desc,
-			'optionscode'	=> 'forumselect',
-			'value'			=> '',
-		),*/
 		'firstpost'	=> array(
 			'title'			=> $lang->setting_ougc_customrep_firstpost,
 			'description'	=> $lang->setting_ougc_customrep_firstpost_desc,
@@ -222,12 +206,6 @@ function ougc_customrep_activate()
 		'delete'	=> array(
 			'title'			=> $lang->setting_ougc_customrep_delete,
 			'description'	=> $lang->setting_ougc_customrep_delete_desc,
-			'optionscode'	=> 'yesno',
-			'value'			=> 1,
-		),
-		'ajax'	=> array(
-			'title'			=> $lang->setting_ougc_customrep_ajax,
-			'description'	=> $lang->setting_ougc_customrep_ajax_desc,
 			'optionscode'	=> 'yesno',
 			'value'			=> 1,
 		),
@@ -245,21 +223,7 @@ function ougc_customrep_activate()
 	// Insert template/group
 	$PL->templates('ougccustomrep', $lang->ougc_customrep, array(
 		''						=> '<div class="customrep" id="customrep_{$customrep->post[\'pid\']}" style="float: right;">{$reputations}</div>',
-		'headerinclude' 		=> '<script src="{$settings[\'bburl\']}/jscripts/ougc_customrep.js" type="text/javascript"></script>',
-		/*'misc'					=> '<html>
-	<head>
-		<title>{$title} - {$mybb->settings[\'bbname\']}</title>
-		{$headerinclude}
-	</head>
-	<body class="misc_buddypopup">
-		<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder" style="text-align: left;">
-			<tr><td class="thead" colspan="2"><strong>{$title}</strong></td></tr>
-			{$content}
-			<tr><td class="tfoot" colspan="2" align="center"><a onclick="window.close();">[{$lang->ougc_customrep_close}]</a></td></tr>
-		</table><br />
-		{$multipage}
-	</body>
-</html>',*/
+		'headerinclude' 		=> '<script src="{$mybb->settings[\'bburl\']}/jscripts/ougc_customrep.js" type="text/javascript"></script>',
 		'misc'				=> '<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder" style="text-align: left;">
 	<tr><td class="thead" colspan="2"><strong>{$title}</strong></td></tr>
 	<tr><td class="tcat" colspan="2"><strong>{$lang->ougc_customrep_popup_latest}</strong></td></tr>
@@ -267,7 +231,6 @@ function ougc_customrep_activate()
 	{$multipage}
 </table>',
 		'misc_multipage'		=> '<tr><td class="tfoot" colspan="2">{$multipage}</td></tr>',
-		/*'misc_ajax_fullview'	=> '<a href="{$multipage_url}" onclick="OUGC_CustomReputationPopUpClose(); MyBB.popupWindow(\'{$multipage_url}\', \'OUGC_CustomReputationPopUp\', 350, 350); return false;" style="float: right;">{$lang->ougc_customrep_popup_fullview}</a>',*/
 		'misc_error'			=> '<tr><td class="trow1" colspan="2">{$error_message}</td></tr>',
 		'misc_row'				=> '<tr>
 <td class="{$trow}" width="60%">{$log[\'profilelink_f\']}</td>
@@ -278,6 +241,7 @@ function ougc_customrep_activate()
 		'rep_number'			=> '&nbsp;<a href="javascript:MyBB.popupWindow(\'/{$popupurl}\');" rel="nofollow" title="{$lang->ougc_customrep_viewall}" class="number" title="{$lang->ougc_customrep_viewlatest}" id="ougccustomrep_view_{$customrep->post[\'pid\']}">x {$number}</a>',
 		'rep_voted'				=> '<a href="{$link}" class="voted {$classextra}">{$image}</a>',
 		'postbit_reputation'				=> '<span id="customrep_rep_{$post[\'pid\']}">{$post[\'userreputation\']}</span>',
+		'modal'					=> '<div class="modal"><div style="overflow-y: auto; max-height: 400px;">{$page}</div></div>'
 	));
 
 	change_admin_permission('config', 'ougc_customrep', 1);
@@ -341,17 +305,7 @@ function ougc_customrep_deactivate()
 function ougc_customrep_install()
 {
 	global $customrep, $db;
-	$customrep->meets_requirements() or $customrep->admin_redirect($customrep->message, true);
-
-	// Drop our tables
-	$db->drop_table('ougc_customrep');
-	$db->drop_table('ougc_customrep_log');
-
-	// Drop reputation field
-	/*if($db->field_exists('lid', 'reputation'))
-	{
-		$db->drop_column('reputation', 'lid');
-	}*/
+	ougc_customrep_uninstall();
 
 	// Add our tables
 	$collation = $db->build_create_table_collation();
@@ -485,14 +439,6 @@ function ougc_customrep_postbit(&$post)
 
 	if($customrep->firstpost_only)
 	{
-		// useless
-		/*global $thread;
-
-		if($post['pid'] != $thread['firstpost'])
-		{
-			return;
-		}*/
-
 		global $plugins;
 
 		$plugins->remove_hook('postbit', 'ougc_customrep_postbit');
@@ -504,13 +450,7 @@ function ougc_customrep_postbit(&$post)
 
 		$customrep->set_forum($fid);
 
-		/*if(!isset($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')]))
-		{
-			$templates->get('postbit'.($settings['postlayout'] == 'classic' ? '_classic' : ''));
-		}*/
-		#_dump($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')]);
-
-		if(!$customrep->allowed_forum/* || !my_strpos($templates->cache['postbit'.($settings['postlayout'] == 'classic' ? '_classic' : '')], '{$post[\'customrep\']}')*/)
+		if(!$customrep->allowed_forum)
 		{
 			global $plugins;
 
@@ -518,7 +458,7 @@ function ougc_customrep_postbit(&$post)
 			return;
 		}
 
-		if($customrep->ajax_request)
+		if($mybb->settings['use_xmlhttprequest'])
 		{
 			global $headerinclude;
 
@@ -559,13 +499,6 @@ function ougc_customrep_postbit(&$post)
 
 	// Now we build the reputation bit
 	ougc_customrep_parse_postbit($post['customrep']);
-
-	#eval('$post[\'userreputation\'] = "'.$templates->get('ougccustomrep_postbit_reputation').'";');
-	#eval('$replink = "'.$templates->get('postbit_reputation').'";');
-
-	#$post['user_details'] = str_replace($post['replink'], $replink, $post['user_details']);
-	#eval("\$post['user_details'] = \"".$templates->get("postbit_author_user")."\";");
-	#find_replace_templatesets('postbit_reputation', '#'.preg_quote('<span id="customrep_rep_{$post[\'pid\']}">{$post[\'userreputation\']}</span>').'#i', '{$post[\'userreputation\']}', 0);
 }
 
 // Delete logs when deleting a thread
@@ -703,7 +636,7 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 		'my_post_key' => (isset($mybb->post_code) ? $mybb->post_code : generate_post_check()),
 	);
 
-	if(!$customrep->ajax_request)
+	if(!$mybb->settings['use_xmlhttprequest'])
 	{
 		$lang->ougc_customrep_viewlatest = $lang->ougc_customrep_viewlatest_noajax;
 	}
@@ -718,7 +651,7 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 
 		$number = 0;
 		$classextra = '';
-		if($customrep->ajax_request)
+		if($mybb->settings['use_xmlhttprequest'])
 		{
 			$link = "javascript:OUGC_CustomReputation.Add('{$customrep->post['tid']}', '{$customrep->post['pid']}', '{$mybb->post_code}', '{$rid}', '0');";
 			if($customrep->allow_delete)
@@ -754,7 +687,7 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 			}
 			if($voted_this && $customrep->allow_delete)
 			{
-				$link = $customrep->ajax_request ? $link_delete : $link.'&amp;delete=1';
+				$link = $mybb->settings['use_xmlhttprequest'] ? $link_delete : $link.'&amp;delete=1';
 
 				$classextra = '_delete';
 				$lang_val = $lang->sprintf($lang->ougc_customrep_delete, $reputation['name']);
@@ -772,7 +705,7 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 				eval('$image = "'.$templates->get('ougccustomrep_rep_img', 1, 0).'";');
 			}
 		}
-		elseif(($reputation['groups'] == -1 || ($reputation['groups'] && $customrep->is_member($reputation['groups'])))/* && $mybb->settings['ougc_customrep_groups'] != -1 && (!$mybb->settings['ougc_customrep_groups'] || !$customrep->is_member($mybb->settings['ougc_customrep_groups']))*/ && $customrep->post['uid'] != $mybb->user['uid'])
+		elseif(($reputation['groups'] == -1 || ($reputation['groups'] && $customrep->is_member($reputation['groups']))) && $customrep->post['uid'] != $mybb->user['uid'])
 		{//TODO
 			$lang_val = $lang->sprintf($lang->ougc_customrep_vote, $reputation['name']);
 			eval('$image = "'.$templates->get('ougccustomrep_rep_img', 1, 0).'";');
@@ -810,14 +743,11 @@ function ougc_customrep_request()
 		return;
 	}
 
-	$mybb->input['ajax'] = ($customrep->ajax_request && $mybb->get_input('ajax', 1) == 1 ? true : false);
-
 	if($mybb->get_input('action') == 'customreppu')
 	{
 		global $thread, $fid, $lang;
 
 		$error = 'error';
-		#$mybb->input['ajax'] or ($error = 'ougc_customrep_misc_error');
 
 		// Good bay guests :)
 		if(!$mybb->user['uid'])
@@ -855,12 +785,7 @@ function ougc_customrep_request()
 		}
 
 		// Save four queries here
-		$templates->cache('ougccustomrep_misc_row, ougccustomrep_misc_error, ougccustomrep_misc_multipage, ougccustomrep_misc, ougccustomrep_postbit_reputation');
-
-		// the ide here is to allow multipage on both, the ajax window as well as the no-ajax one.
-		// Ajax one mulipage works replacing the table content with the new query result, this of course means a new template that probably will end being using it for the not-ajax version as well..
-		//...
-		// Probably should leave popup ajax for next version.
+		$templates->cache('ougccustomrep_misc_row, ougccustomrep_misc_error, ougccustomrep_misc_multipage, ougccustomrep_misc, ougccustomrep_postbit_reputation, ougccustomrep_modal');
 
 		$popupurl = $customrep->build_url(array(
 			'pid' => $customrep->post['pid'],
@@ -938,27 +863,15 @@ function ougc_customrep_request()
 
 		$title = $lang->sprintf($lang->ougc_customrep_popuptitle, $reputation['name'], $customrep->post['subject']);
 
-		/*if($mybb->input['ajax'])
-		{*/
-			$lang->ougc_customrep_popup_latest = $lang->sprintf($lang->ougc_customrep_popup_latest, my_number_format($count));
-			/*if($multipage)
-			{
-				$multipage_url = str_replace('&amp;ajax=1', '', $multipage_url);
-				$trow = alt_trow();
-				eval('$fullview = "'.$templates->get('ougccustomrep_misc_ajax_fullview').'";');
-			}*/
-			if($multipage)
-			{
-				eval('$multipage = "'.$templates->get('ougccustomrep_misc_multipage').'";');
-			}
-			eval('$page = "'.$templates->get('ougccustomrep_misc', 1, 0).'";');
-			echo '<div class="modal"><div style="overflow-y: auto; max-height: 400px;">'.$page.'</div></div>';
-		/*}
-		else
+		$lang->ougc_customrep_popup_latest = $lang->sprintf($lang->ougc_customrep_popup_latest, my_number_format($count));
+		if($multipage)
 		{
-			eval('$page = "'.$templates->get('ougccustomrep_misc').'";');
-			output_page($page);
-		}*/
+			eval('$multipage = "'.$templates->get('ougccustomrep_misc_multipage').'";');
+		}
+		eval('$page = "'.$templates->get('ougccustomrep_misc', 1, 0).'";');
+		eval('$modal = "'.$templates->get('ougccustomrep_modal', 1, 0).'";');
+		echo $modal;
+
 		exit;
 	}
 
@@ -972,12 +885,6 @@ function ougc_customrep_request()
 	}
 
 	verify_post_check($mybb->get_input('my_post_key'));
-
-	// Check global setting for groups
-	/*if($mybb->settings['ougc_customrep_groups'] == -1 || ($mybb->settings['ougc_customrep_groups'] && $customrep->is_member($mybb->settings['ougc_customrep_groups'])))
-	{
-		error($lang->ougc_customrep_error_nopermission);
-	}*/
 
 	$customrep->set_post(get_post($mybb->get_input('pid', 1)));
 
@@ -1052,7 +959,7 @@ function ougc_customrep_request()
 		$customrep->insert_log($reputation['rid'], $reputation['reptype']);
 	}
 
-	$customrep->ajax_request or $customrep->redirect(get_post_link($customrep->post['pid'], $customrep->post['tid']).'#'.$customrep->post['tid'], true);
+	$mybb->settings['use_xmlhttprequest'] or $customrep->redirect(get_post_link($customrep->post['pid'], $customrep->post['tid']).'#'.$customrep->post['tid'], true);
 
 	// > On postbit, the plugin loads ALL votes, and does a summation + check for current user voting on this.  This can potentially be problematic if there happens to be a large number of votes.
 	$query = $db->simple_select('ougc_customrep_log', '*', "pid='{$customrep->post['pid']}' AND rid='{$reputation['rid']}'");
@@ -1082,28 +989,6 @@ function ougc_customrep_request()
 	exit;
 }
 
-// Workaround
-function ougc_customrep_misc_error()
-{
-	global $plugins, $mybb, $templates, $theme, $lang, $headerinclude, $ajax;
-
-	$title = $lang->ougc_customrep_error;
-	$error_message = $plugins->run_hooks('error', $error_message);
-	$error_message = ($error_message ? $error_message : $lang->unknown_error);
-
-	if($customrep->ajax_request)
-	{
-		$mybb->input['ajax'] = 1;
-		error($error_message);
-	}
-
-	eval('$content = "'.$templates->get('ougccustomrep_popup_error').'";');
-	eval('$content = "'.$templates->get('ougccustomrep_popup_ajax', 1, 0).'";');
-	eval('$page = "'.$templates->get('ougccustomrep_popup').'";');
-	output_page($page);
-	exit;
-}
-
 // Our awesome class
 class OUGC_CustomRep
 {
@@ -1128,9 +1013,6 @@ class OUGC_CustomRep
 	// Set current handling post
 	public $post = array();
 
-	// Ajax requests
-	public $ajax_request = false;
-
 	// Is the plugin active? Default is false
 	public $active = false;
 
@@ -1146,11 +1028,6 @@ class OUGC_CustomRep
 
 			// Is plugin active?
 			$this->active = isset($plugins['active']['ougc_customrep']);
-		}
-
-		if($mybb->settings['use_xmlhttprequest'] && $mybb->settings['ougc_customrep_ajax'])
-		{
-			$this->ajax_request = true;
 		}
 
 		$this->rids = array();
@@ -1313,24 +1190,6 @@ class OUGC_CustomRep
 			);
 
 			$this->cache['images'][$rid] = str_replace(array_keys($replaces), array_values($replaces), $image);
-
-			/*// The image is external.
-			if(my_strpos($image, 'ttp:/') || my_strpos($image, 'ttps:/')) 
-			{
-				$this->cache['images'][$rid] = $image;
-			}
-			elseif($image && !my_strpos($image, '/') && file_exists(MYBB_ROOT.'/images/ougc_customrep/'.$image))
-			{
-				$this->cache['images'][$rid] = $settings['bburl'].'/images/ougc_customrep/'.$image;
-			}
-			elseif(my_strpos($image, '/') && file_exists(MYBB_ROOT.$image))
-			{
-				$this->cache['images'][$rid] = $settings['bburl'].'/'.$image;
-			}
-			else
-			{
-				$this->cache['images'][$rid] = $settings['bburl'].'/images/ougc_customrep/default.png';
-			}*/
 		}
 
 		return $this->cache['images'][$rid];
@@ -1604,37 +1463,34 @@ class OUGC_CustomRep
 	{
 		global $settings;
 
-		/*if($settings['ougc_customrep_forums'] != -1 && (!$settings['ougc_customrep_forums'] || !in_array($fid, $this->clean_array($settings['ougc_customrep_forums'], false))))
-		{*/
-			global $PL;
-			$PL or require_once PLUGINLIBRARY;
+		global $PL;
+		$PL or require_once PLUGINLIBRARY;
 
-			if(!($this->cache['_reps'] = $PL->cache_read('ougc_customrep')))
+		if(!($this->cache['_reps'] = $PL->cache_read('ougc_customrep')))
+		{
+			$this->cache['_reps'] = array();
+		}
+
+		foreach($this->cache['_reps'] as $rid => &$rep)
+		{
+			if($rep['forums'] == '' || ($rep['forums'] != -1 && !in_array($fid, $this->clean_array($rep['forums'], false))))
 			{
-				$this->cache['_reps'] = array();
+				unset($this->cache['_reps'][$rid]);
+				continue;
 			}
-
-			foreach($this->cache['_reps'] as $rid => &$rep)
+			unset($this->cache['_reps'][$rid]['forums']);
+			if(($name = $this->get_name($rid)))
 			{
-				if($rep['forums'] == '' || ($rep['forums'] != -1 && !in_array($fid, $this->clean_array($rep['forums'], false))))
-				{
-					unset($this->cache['_reps'][$rid]);
-					continue;
-				}
-				unset($this->cache['_reps'][$rid]['forums']);
-				if(($name = $this->get_name($rid)))
-				{
-					$rep['name'] = $name;
-				}
-				$rep['name'] = htmlspecialchars_uni($rep['name']);
-				#$rep['image'] = htmlspecialchars_uni($this->get_image($rep['image'], $rid));
-				$rep['image'] = $this->get_image($rep['image'], $rid);
-				$rep['groups'] = $this->clean_array($rep['groups']);
+				$rep['name'] = $name;
 			}
+			$rep['name'] = htmlspecialchars_uni($rep['name']);
+			#$rep['image'] = htmlspecialchars_uni($this->get_image($rep['image'], $rid));
+			$rep['image'] = $this->get_image($rep['image'], $rid);
+			$rep['groups'] = $this->clean_array($rep['groups']);
+		}
 
-			$this->rids = array_keys($this->cache['_reps']);
-			$this->allowed_forum = (bool)$this->cache['_reps'];
-		/*}*/
+		$this->rids = array_keys($this->cache['_reps']);
+		$this->allowed_forum = (bool)$this->cache['_reps'];
 	}
 
 	// Set post data
@@ -1715,7 +1571,6 @@ class OUGC_CustomRep
 			'rids'	=> array()
 		);
 		$query = $db->simple_select('reputation', 'rid, uid, pid', 'lid=\''.(int)$lid.'\'');
-		#$query = $db->simple_select('reputation', 'rid, reputation, uid', 'lid=\''.(int)$lid.'\'');
 		while($rep = $db->fetch_array($query))
 		{
 			$args['uids'][(int)$rep['uid']] = 1;
