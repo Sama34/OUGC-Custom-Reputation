@@ -96,6 +96,8 @@ else
 	}
 }
 
+$plugins->add_hook('datahandler_user_delete_content', 'ougc_customrep_user_delete_content');
+
 // PLUGINLIBRARY
 defined('PLUGINLIBRARY') or define('PLUGINLIBRARY', MYBB_ROOT.'inc/plugins/pluginlibrary.php');
 
@@ -465,11 +467,11 @@ function ougc_customrep_users_merge()
 }
 
 // Delete logs from users which are being deleted
-function ougc_customrep_delete_user($uid)
+function ougc_customrep_user_delete_content(&$dh)
 {
 	global $db, $customrep;
 
-	$query = $db->simple_select('ougc_customrep_log', 'lid', 'uid=\''.(int)$uid.'\'');
+	$query = $db->simple_select('ougc_customrep_log', 'lid', 'uid IN('.$dh->delete_uids.')');
 	while($lid = $db->fetch_field($query, 'lid'))
 	{
 		$customrep->delete_log($lid);
@@ -498,7 +500,7 @@ function ougc_customrep_postbit(&$post)
 
 	if(!isset($customrep->cache['query']))
 	{
-		global $settings;
+		global $mybb;
 
 		$customrep->set_forum($fid);
 
@@ -1945,44 +1947,3 @@ if(!function_exists('ougc_print_selection_javascript'))
 	</script>";
 	}
 }
-
-// Detect user deletions
-control_object($db, '
-	function delete_query($table, $where="", $limit="")
-	{
-		if($table == "users" && !$limit)
-		{
-			preg_match_all(\'#uid=\\\'([0-9]+)\\\'#i\', $where, $matches);
-			if(isset($matches[1]))
-			{
-				global $customrep;
-
-				if(is_object($customrep))
-				{
-					foreach($matches[1] as $uid)
-					{
-						ougc_customrep_delete_user($uid);
-					}
-				}
-			}
-			preg_match_all(\'#uid IN \((.*?)\)#i\', $where, $matches);
-			if(isset($matches[1]))
-			{
-				$uids = array_unique(array_map("intval", explode(",", $matches[1])));
-				if($uids)
-				{
-					global $customrep;
-
-					if(is_object($customrep))
-					{
-						foreach($uids as $uid)
-						{
-							ougc_customrep_delete_user($uid);
-						}
-					}
-				}
-			}
-		}
-		return parent::delete_query($table, $where, $limit);
-	}
-');
