@@ -500,7 +500,7 @@ function ougc_customrep_postbit(&$post)
 
 	if(!isset($customrep->cache['query']))
 	{
-		global $settings;
+		global $mybb;
 
 		$customrep->set_forum($fid);
 
