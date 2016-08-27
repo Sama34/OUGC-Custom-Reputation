@@ -112,6 +112,7 @@ function ougc_customrep_info()
 		'version'		=> '1.8.2',
 		'versioncode'	=> 1802,
 		'compatibility'	=> '18*',
+		'codename'		=> 'ougc_customrep',
 		'guid' 			=> '',
 		'pl'			=> array(
 			'version'	=> 12,
@@ -162,31 +163,6 @@ function ougc_customrep_activate()
 
 .customrep img {
 	vertical-align: middle;
-}
-
-.customrep_popup {
-	top: -10000px;
-	display: none;
-	position: fixed;
-	z-index: 5;
-	text-align: left;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	text-align: left;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	background: rgba(0, 0, 0, 0.6);
-	margin: auto auto;
-	padding: auto auto;
-}
-
-.customrep_popup table {
-	width: 350px;
-	margin: 10% auto auto;
-	padding: auto auto;
 }', 'showthread.php');
 
 	// Modify some templates.
@@ -222,7 +198,7 @@ function ougc_customrep_activate()
 
 	// Insert template/group
 	$PL->templates('ougccustomrep', $lang->ougc_customrep, array(
-		''						=> '<div class="customrep" id="customrep_{$customrep->post[\'pid\']}" style="float: right;">{$reputations}</div>',
+		''						=> '<div class="customrep float_right" id="customrep_{$customrep->post[\'pid\']}">{$reputations}</div>',
 		'headerinclude' 		=> '<script src="{$mybb->settings[\'bburl\']}/jscripts/ougc_customrep.js" type="text/javascript"></script>',
 		'misc'				=> '<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder" style="text-align: left;">
 	<tr><td class="thead" colspan="2"><strong>{$title}</strong></td></tr>
@@ -435,7 +411,12 @@ function ougc_customrep_user_delete_content(&$dh)
 // Postbit
 function ougc_customrep_postbit(&$post)
 {
-	global $fid, $customrep, $tid, $templates;
+	global $fid, $customrep, $tid, $templates, $thread;
+
+	if($customrep->firstpost_only && $post['pid'] != $thread['firstpost'])
+	{
+		return;
+	}
 
 	if($customrep->firstpost_only)
 	{
@@ -827,7 +808,7 @@ function ougc_customrep_request()
 
 		$customrep->lang_load();
 
-		$query = $db->query('SELECT r.*, u.username, u.usergroup, u.displaygroup
+		$query = $db->query('SELECT r.*, u.username, u.usergroup, u.displaygroup, u.avatar, u.avatartype, u.avatardimensions
 			FROM '.TABLE_PREFIX.'ougc_customrep_log r 
 			LEFT JOIN '.TABLE_PREFIX.'users u ON (u.uid=r.uid)
 			WHERE r.pid=\''.$customrep->post['pid'].'\' AND r.rid=\''.$reputation['rid'].'\'
@@ -848,6 +829,8 @@ function ougc_customrep_request()
 			$log['date'] = my_date($mybb->settings['dateformat'], $log['dateline']);
 			$log['time'] = my_date($mybb->settings['timeformat'], $log['dateline']);
 			$date = $lang->sprintf($lang->ougc_customrep_popup_date, $log['date'], $log['time']);
+
+			$log['avatar'] = format_avatar($log['avatar'], $log['avatardimensions']);
 
 			eval('$content .= "'.$templates->get('ougccustomrep_misc_row').'";');
 		}
