@@ -2,7 +2,7 @@
 
 /***************************************************************************
  *
- *	OUGC Custom Reputation plugin (/inc/languages/english/ougc_customrep.php)
+ *	OUGC Custom Reputation plugin (/inc/languages/english/ougc_customrep.lang.php)
  *	Author: Omar Gonzalez
  *	Copyright: © 2012 - 2014 Omar Gonzalez
  *
@@ -41,6 +41,7 @@ $l['ougc_customrep_error_closedthread'] = 'You are not allowed to rate closed th
 $l['ougc_customrep_error_invalidrep'] = 'Invalid rating type.';
 $l['ougc_customrep_error_invalidrating'] = 'You are trying to delete a rating that doesn\'t exists.';
 $l['ougc_customrep_error_multiple'] = 'Multiple rating no allowed.';
+$l['ougc_customrep_error_points'] = 'You don\'t have enought points to use this rating. You need {1} in order to rate this post.';
 
 // Misc page
 $l['ougc_customrep_viewall'] = 'View who rated this.';
@@ -59,6 +60,14 @@ $l['ougc_customrep_vote'] = '{1} this post.';
 $l['ougc_customrep_voted'] = 'You rated this.';
 $l['ougc_customrep_voted_undo'] = 'Undo your rating to rate again.';
 $l['ougc_customrep_delete'] = 'Undo {1} this post.';
+
+// Profile
+$l['ougc_customrep_profile_stats'] = '{1}\'s Rating Stats';
+$l['ougc_customrep_profile_stats_empty'] = 'There are currently no stats to display.';
+$l['ougc_customrep_profile_stats_received'] = 'Received ratings.';
+$l['ougc_customrep_profile_stats_given'] = 'Given ratings.';
+
+$l['ougc_customrep_postbit_ignoredbit'] = 'The contents of this message are hidden because of its ratings.';
 
 // Multi-lang support for individual rate types
 #$l['ougc_customrep_name_RID'] = 'Name';

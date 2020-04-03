@@ -104,13 +104,13 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 	}
 
 	$group_checked = array('all' => '', 'custom' => '', 'none' => '');
-	if($mybb->get_input('groups_type') == 'all' || $mybb->get_input('groups') == -1)
+	if($mybb->get_input('groups_type') == 'all' || !$mybb->get_input('groups_type') && (int)$mybb->get_input('groups') === -1)
 	{
 		$mybb->input['groups_type'] = 'all';
 		$mybb->input['groups'] = -1;
 		$group_checked['all'] = 'checked="checked"';
 	}
-	elseif($mybb->get_input('groups_type') == 'none' || $mybb->get_input('groups') == '' && !$mybb->get_input('groups', 2))
+	elseif($mybb->get_input('groups_type') == 'none' || !$mybb->get_input('groups_type') &&  $mybb->get_input('groups') === '')
 	{
 		$mybb->input['groups_type'] = 'none';
 		$mybb->input['groups'] = '';
@@ -124,13 +124,13 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 	}
 
 	$forum_checked = array('all' => '', 'custom' => '', 'none' => '');
-	if($mybb->get_input('forums_type') == 'all' || $mybb->get_input('forums') == -1)
+	if($mybb->get_input('forums_type') == 'all' || !$mybb->get_input('forums_type') && (int)$mybb->get_input('forums') === -1)
 	{
 		$mybb->input['forums_type'] = 'all';
 		$mybb->input['forums'] = -1;
 		$forum_checked['all'] = 'checked="checked"';
 	}
-	elseif($mybb->get_input('forums_type') == 'none' || $mybb->get_input('forums') == '' && !$mybb->get_input('forums', 2))
+	elseif($mybb->get_input('forums_type') == 'none' || !$mybb->get_input('forums_type') && $mybb->get_input('forums') === '')
 	{
 		$mybb->input['forums_type'] = 'none';
 		$mybb->input['forums'] = '';
@@ -229,6 +229,8 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 
 	$form_container->output_row($lang->ougc_customrep_h_order, $lang->ougc_customrep_f_disporder_d, $form->generate_text_box('disporder', $customrep->rep_data['disporder'], array('style' => 'text-align: center; width: 30px;" maxlength="5')));
 	$form_container->output_row($lang->ougc_customrep_h_visible, $lang->ougc_customrep_f_visible_d, $form->generate_yes_no_radio('visible', $customrep->rep_data['visible']));
+	$form_container->output_row($lang->ougc_customrep_h_points, $lang->ougc_customrep_h_points_d, $form->generate_text_box('points', $customrep->rep_data['points']));
+	$form_container->output_row($lang->ougc_customrep_h_ignorepoints, $lang->ougc_customrep_h_ignorepoints_d, $form->generate_text_box('ignorepoints', $customrep->rep_data['ignorepoints']));
 
 	$form_container->end();
 
@@ -323,8 +325,16 @@ else
 
 		while($reputation = $db->fetch_array($query))
 		{
-			$table->construct_cell('<img src="'.$customrep->get_image($reputation['image'], $reputation['rid']).'" />', array('class' => 'align_center'));
+			if($mybb->settings['ougc_customrep_fontawesome'])
+			{
+				$image = '<i class="fa fa-'.$reputation['image'].'" aria-hidden="true"></i>';
+			}
+			else
+			{
+				$image = '<img src="'.$customrep->get_image($reputation['image'], $reputation['rid']).'" />';
+			}
 			
+			$table->construct_cell($image, array('class' => 'align_center'));
 			$table->construct_cell(htmlspecialchars_uni($reputation['name']));
 			$table->construct_cell($form->generate_text_box('disporder['.$reputation['rid'].']', (int)$reputation['disporder'], array('style' => 'text-align: center; width: 30px;')), array('class' => 'align_center'));
 
@@ -369,6 +379,11 @@ else
 
 		$form->output_submit_wrapper(array($form->generate_submit_button($lang->ougc_customrep_button_disponder), $form->generate_reset_button($lang->reset)));
 		$form->end();
+
+		if($mybb->settings['ougc_customrep_fontawesome'])
+		{
+			echo '<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">';
+		}
 	}
 
 	$page->output_footer();

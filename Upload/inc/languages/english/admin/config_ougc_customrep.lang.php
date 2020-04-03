@@ -2,7 +2,7 @@
 
 /***************************************************************************
  *
- *	OUGC Custom Reputation plugin (/inc/languages/english/config_ougc_customrep.lang.php)
+ *	OUGC Custom Reputation plugin (/inc/languages/english/admin/config_ougc_customrep.lang.php)
  *	Author: Omar Gonzalez
  *	Copyright: © 2012 - 2014 Omar Gonzalez
  *
@@ -76,6 +76,10 @@ $l['ougc_customrep_f_disporder_d'] = 'Order on which this custom reputation will
 $l['ougc_customrep_f_visible_d'] = 'Whether if to enable or disable this custom reputation.';
 $l['ougc_customrep_h_reptype'] = 'Reputation Level';
 $l['ougc_customrep_h_reptype_d'] = 'How does this custom reputation affect users\'s reputation. Empty to disable.';
+$l['ougc_customrep_h_points'] = 'Newpoints Points Cost';
+$l['ougc_customrep_h_points_d'] = 'Please note that the post owner receives the points and points are reverted if the rating is deleted.';
+$l['ougc_customrep_h_ignorepoints'] = 'Hide Post On Count';
+$l['ougc_customrep_h_ignorepoints_d'] = 'Posts can be hidden by default if they reach an amount of rates. Please insert the amount of rates needed for posts to be hidden by default.';
 
 // Validation
 $l['ougc_customrep_error_invalidname'] = 'Invalid name.';
@@ -90,3 +94,16 @@ $l['setting_ougc_customrep_delete'] = 'Allow Deletion';
 $l['setting_ougc_customrep_delete_desc'] = 'Allow deletion of ratings.';
 $l['setting_ougc_customrep_perpage'] = 'Multipage Per Page';
 $l['setting_ougc_customrep_perpage_desc'] = 'Maximum number of options to show per page.';
+$l['setting_ougc_customrep_fontawesome'] = 'Use Font Awesome Icons';
+$l['setting_ougc_customrep_fontawesome_desc'] = 'Activate this setting if you want to use font awesome icons instead of images.';
+$l['setting_ougc_customrep_threadlist'] = 'Display On Thread Listing';
+$l['setting_ougc_customrep_threadlist_desc'] = 'Select the forums where you want to display ratings within the forum thread list.';
+$l['setting_ougc_customrep_portal'] = 'Display On Portal Announcements';
+$l['setting_ougc_customrep_portal_desc'] = 'Select the forums where threads need to be from to display its custom reputation box within the portal announcements listing.';
+$l['setting_ougc_xthreads_hide'] = 'Active xThreads Hide Feature';
+$l['setting_ougc_xthreads_hide_desc'] = 'Select which xthreads this feature should hijack to control dysplay status. Please read the documentation for this feature.';
+$l['setting_ougc_stats_profile'] = 'Display Users Stats in Profiles';
+$l['setting_ougc_stats_profile_desc'] = 'Enable this setting to display user stats within profiles.';
+
+$l['setting_ougc_xthreads_information'] = '<span style="color: gray;">To be able to use this feature you need to install <a href="http://mybbhacks.zingaburga.com/showthread.php?tid=288">xThreads</a> and create some fields according to the documentation.</span>';
+
