@@ -4,11 +4,11 @@
  *
  *	OUGC Custom Reputation plugin (/inc/plugins/ougc_customrep.php)
  *	Author: Omar Gonzalez
- *	Copyright: © 2012 - 2014 Omar Gonzalez
+ *	Copyright: © 2012 - 2020 Omar Gonzalez
  *
- *	Website: http://omarg.me
+ *	Website: https://ougc.network
  *
- *	Allow users rate posts with custom post reputations.
+ *	Allow users rate posts with custom post reputations with rich features.
  *
  ***************************************************************************
  
@@ -386,7 +386,7 @@ else
 
 		if($mybb->settings['ougc_customrep_fontawesome'])
 		{
-			echo '<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">';
+			echo $mybb->settings['ougc_customrep_fontawesome_acp'];
 		}
 	}
 

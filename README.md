@@ -1,5 +1,5 @@
 ## OUGC Custom Reputation
-Allow users rate posts with custom post reputations.
+Allow users rate posts with custom post reputations with rich features.
 
 ***
 

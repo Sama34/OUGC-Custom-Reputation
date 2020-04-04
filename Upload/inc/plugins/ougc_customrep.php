@@ -4,11 +4,11 @@
  *
  *	OUGC Custom Reputation plugin (/inc/plugins/ougc_customrep.php)
  *	Author: Omar Gonzalez
- *	Copyright: © 2012 - 2014 Omar Gonzalez
+ *	Copyright: © 2012 - 2020 Omar Gonzalez
  *
- *	Website: http://omarg.me
+ *	Website: https://ougc.network
  *
- *	Allow users rate posts with custom post reputations.
+ *	Allow users rate posts with custom post reputations with rich features.
  *
  ***************************************************************************
  
@@ -131,8 +131,8 @@ function ougc_customrep_info()
 		'website'		=> 'https://ougc.network',
 		'author'		=> 'Omar G.',
 		'authorsite'	=> 'https://ougc.network',
-		'version'		=> '1.8.22',
-		'versioncode'	=> 1802,
+		'version'		=> '1.8.21',
+		'versioncode'	=> 1821,
 		'compatibility'	=> '18*',
 		'codename'		=> 'ougc_customrep',
 		'newpoints'		=> '2.1.1',
@@ -226,6 +226,12 @@ function ougc_customrep_activate()
 			'description'	=> $lang->setting_ougc_customrep_fontawesome_desc,
 			'optionscode'	=> 'yesno',
 			'value'			=> 0,
+		),
+		'fontawesome_acp'	=> array(
+			'title'			=> $lang->setting_ougc_customrep_fontawesome_acp,
+			'description'	=> $lang->setting_ougc_customrep_fontawesome_acp_desc,
+			'optionscode'	=> 'text',
+			'value'			=> '<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">',
 		),
 		'threadlist'	=> array(
 			'title'			=> $lang->setting_ougc_customrep_threadlist,
@@ -401,8 +407,7 @@ OUGC_CustomReputation.xThreads(\'{$default_value}\', \'{$xt_field}\');',
 		'rep_number'			=> '&nbsp;<a href="javascript:MyBB.popupWindow(\'/{$popupurl}\');" rel="nofollow" title="{$lang->ougc_customrep_viewall}" class="number" title="{$lang->ougc_customrep_viewlatest}" id="ougccustomrep_view_{$customrep->post[\'pid\']}">{$number}</a>',
 		'rep_voted'				=> '<a href="{$link}" class="voted {$classextra}">{$image}</a>',
 		'postbit_reputation'				=> '<span id="customrep_rep_{$post[\'pid\']}">{$post[\'userreputation\']}</span>',
-		'profile' 		=> '<br />
-<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" width="100%" class="tborder">
+		'profile' 		=> '<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" width="100%" class="tborder">
 	<tr>
 		<td colspan="2" class="thead"><strong>{$lang->ougc_customrep_profile_stats}</strong></td>
 	</tr>
@@ -487,7 +492,7 @@ OUGC_CustomReputation.xThreads(\'{$default_value}\', \'{$xt_field}\');',
 			}
 		}
 
-		if((int)$plugins['customrep'] < 1822)
+		if((int)$plugins['customrep'] < 1821)
 		{
 			global $db;
 
@@ -962,6 +967,11 @@ function ougc_customrep_portal_announcement()
 		return;
 	}
 
+	if($mybb->settings['ougc_customrep_portal'] != -1 && !is_member($mybb->settings['ougc_customrep_portal'], array('usergroup' => $announcement['fid'])))
+	{
+		return;
+	}
+
 	static $portal_cache = null;
 	if($portal_cache === null)
 	{
@@ -1197,6 +1207,12 @@ function ougc_customrep_member_profile_end()
 
 	$where['q'] = "p.uid='{$memprofile['uid']}'";
 
+	$tmplt_img = 'ougccustomrep_rep_img';
+	if($mybb->settings['ougc_customrep_fontawesome'])
+	{
+		$tmplt_img = 'ougccustomrep_rep_img_fa';
+	}
+
 	$query = $db->simple_select('ougc_customrep_log l LEFT JOIN '.TABLE_PREFIX.'posts p ON (p.pid=l.pid) LEFT JOIN '.TABLE_PREFIX.'threads t ON (t.tid=p.tid)', 'l.rid', implode(' AND ', $where));
 	while($rid = $db->fetch_field($query, 'rid'))
 	{
@@ -1216,11 +1232,7 @@ function ougc_customrep_member_profile_end()
 		$number = my_number_format($stats_received[$rid]);
 		eval('$number = "'.$templates->get('ougccustomrep_profile_number').'";');
 
-		$tmplt_img = 'ougccustomrep_rep_img';
-		if($mybb->settings['ougc_customrep_fontawesome'])
-		{
-			$tmplt_img = 'ougccustomrep_rep_img_fa';
-		}
+		$reputation['image'] = $customrep->get_image($reputation['image'], $rid);
 
 		eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 
@@ -1252,11 +1264,7 @@ function ougc_customrep_member_profile_end()
 		$number = my_number_format($stats_given[$rid]);
 		eval('$number = "'.$templates->get('ougccustomrep_profile_number').'";');
 
-		$tmplt_img = 'ougccustomrep_rep_img';
-		if($mybb->settings['ougc_customrep_fontawesome'])
-		{
-			$tmplt_img = 'ougccustomrep_rep_img_fa';
-		}
+		$reputation['image'] = $customrep->get_image($reputation['image'], $rid);
 
 		eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 
@@ -1836,7 +1844,7 @@ function ougc_customrep_request()
 	$ajax_enabled || $customrep->redirect(get_post_link($customrep->post['pid'], $customrep->post['tid']).'#'.$customrep->post['tid'], true);
 
 	// > On postbit, the plugin loads ALL votes, and does a summation + check for current user voting on this.  This can potentially be problematic if there happens to be a large number of votes.
-	$query = $db->simple_select('ougc_customrep_log', '*', "pid='{$customrep->post['pid']}' AND rid='{$reputation['rid']}'");
+	$query = $db->simple_select('ougc_customrep_log', '*', "pid='{$customrep->post['pid']}'"); //  AND rid='{$reputation['rid']}'
 	while($reputation = $db->fetch_array($query))
 	{
 		$customrep->cache['query'][$reputation['rid']][$reputation['pid']][$reputation['lid']][$reputation['uid']] = 1;

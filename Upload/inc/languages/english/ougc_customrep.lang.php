@@ -4,11 +4,11 @@
  *
  *	OUGC Custom Reputation plugin (/inc/languages/english/ougc_customrep.lang.php)
  *	Author: Omar Gonzalez
- *	Copyright: © 2012 - 2014 Omar Gonzalez
+ *	Copyright: © 2012 - 2020 Omar Gonzalez
  *
- *	Website: http://omarg.me
+ *	Website: https://ougc.network
  *
- *	Allow users rate posts with custom post reputations.
+ *	Allow users rate posts with custom post reputations with rich features.
  *
  ***************************************************************************
  
