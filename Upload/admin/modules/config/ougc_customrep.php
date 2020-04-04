@@ -331,7 +331,7 @@ else
 		{
 			if($mybb->settings['ougc_customrep_fontawesome'])
 			{
-				$image = '<i class="fa fa-'.$reputation['image'].'" aria-hidden="true"></i>';
+				$image = '<i class="'.$reputation['image'].'" aria-hidden="true"></i>';
 			}
 			else
 			{

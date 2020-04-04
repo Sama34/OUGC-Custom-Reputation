@@ -86,7 +86,7 @@ else
 		case 'editpost.php':
 		case 'member.php':
 		case 'attachment.php':
-			$plugins->add_hook('forumdisplay_before_thread', 'ougc_customrep_forumdisplay_before_thread');
+			$plugins->add_hook('forumdisplay_thread', 'ougc_customrep_forumdisplay_thread');
 			$plugins->add_hook('forumdisplay_thread_end', 'ougc_customrep_forumdisplay_thread_end');
 
 			$plugins->add_hook('portal_announcement', 'ougc_customrep_portal_announcement');
@@ -153,13 +153,13 @@ function ougc_customrep_activate()
 
 	$PL->stylesheet('ougc_customrep', '/***************************************************************************
  *
- *   OUGC Custom Reputation (CACHE FILE)
- *	 Author: Omar Gonzalez
- *   Copyright: © 2012 Omar Gonzalez
- *   
- *   Website: http://community.mybb.com/user-25096.html
+ *	OUGC Custom Reputation plugin (CSS FILE)
+ *	Author: Omar Gonzalez
+ *	Copyright: © 2012 - 2020 Omar Gonzalez
  *
- *   Allow users rate posts with custom post reputations.
+ *	Website: https://ougc.network
+ *
+ *	Allow users rate posts with custom post reputations with rich features.
  *
  ***************************************************************************
  
@@ -168,24 +168,58 @@ function ougc_customrep_activate()
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-	
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
 
 .customrep .number {
-	font-weight: bold;
-	text-decoration: none;
-	color: black;
+	border: 1px solid #ccc;
+	background: #eee;
+	position: absolute;
+	z-index: 2;
+	top: -0.7em;
+	right: -1em;
+	min-width: 1.2em;
+	min-height: 1.2em;
+	padding: .2em;
+    line-height: 1;
+	text-align: center;
+	-moz-border-radius: 500rem;
+	-webkit-border-radius: 500rem;
+	border-radius: 500rem;
+	text-decoration: none !important;
+	font-weight: bolder;
 }
 
 .customrep img {
 	vertical-align: middle;
+}
+.customrep img, .customrep i {
+	cursor: pointer;
+    line-height: 1;
+}
+
+.customrep > span {
+	display: inline-block;
+	padding: 2px 5px;
+	margin: 2px;
+	background: #eee url(images/buttons_bg.png) repeat-x;
+	border: 1px solid #ccc;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	position: relative;
+	margin-right: 1em;
+}
+
+.customrep, .customrep * {
+	font-size: 11px;
 }', 'showthread.php|forumdisplay.php|portal.php|member.php');
 
 	// Modify some templates.
@@ -287,13 +321,13 @@ function ougc_customrep_activate()
 <script>
 /***************************************************************************
  *
- *	OUGC Custom Reputation plugin (/jscripts/ougc_customrep.php)
+ *	OUGC Custom Reputation plugin (JAVASCRIPT FILE)
  *	Author: Omar Gonzalez
- *	Copyright: Â© 2012 - 2014 Omar Gonzalez
+ *	Copyright: © 2012 - 2020 Omar Gonzalez
  *
- *	Website: http://omarg.me
+ *	Website: https://ougc.network
  *
- *	Allow users rate posts with custom post reputations.
+ *	Allow users rate posts with custom post reputations with rich features.
  *
  ***************************************************************************
  
@@ -403,7 +437,7 @@ OUGC_CustomReputation.xThreads(\'{$default_value}\', \'{$xt_field}\');',
 </tr>',
 		'rep'					=> '<span title="{$lang_val}">{$image} {$reputation[\'name\']} {$number}</span>',
 		'rep_img'				=> '<img src="{$reputation[\'image\']}" title="{$lang_val}" />',
-		'rep_img_fa'				=> '<i class="fa fa-{$reputation[\'image\']}" aria-hidden="true"></i>',
+		'rep_img_fa'				=> '<i class="{$reputation[\'image\']}" aria-hidden="true"></i>',
 		'rep_number'			=> '&nbsp;<a href="javascript:MyBB.popupWindow(\'/{$popupurl}\');" rel="nofollow" title="{$lang->ougc_customrep_viewall}" class="number" title="{$lang->ougc_customrep_viewlatest}" id="ougccustomrep_view_{$customrep->post[\'pid\']}">{$number}</a>',
 		'rep_voted'				=> '<a href="{$link}" class="voted {$classextra}">{$image}</a>',
 		'postbit_reputation'				=> '<span id="customrep_rep_{$post[\'pid\']}">{$post[\'userreputation\']}</span>',
@@ -872,7 +906,7 @@ function ougc_customrep_global_start()
 {
 	global $customrep, $mybb, $lang;
 
-	if($customrep->newpoints_installed)
+	if($customrep->myalerts_installed)
 	{
 		$formatterManager = MybbStuff_MyAlerts_AlertFormatterManager::getInstance();
 
@@ -893,9 +927,11 @@ function ougc_customrep_global_start()
 }
 
 // Display ratings on forum display
-function ougc_customrep_forumdisplay_before_thread(&$args)
+function ougc_customrep_forumdisplay_thread()
 {
-	global $fid, $customrep, $mybb, $db, $plugins, $headerinclude, $templates;
+	global $fid, $customrep, $mybb, $db, $plugins, $headerinclude, $templates, $threadcache;
+
+	$plugins->remove_hook('forumdisplay_thread', 'ougc_customrep_forumdisplay_thread');
 
 	if(!$mybb->settings['ougc_customrep_threadlist'] || !is_member($mybb->settings['ougc_customrep_threadlist'], array('usergroup' => $fid)))
 	{
@@ -906,8 +942,6 @@ function ougc_customrep_forumdisplay_before_thread(&$args)
 
 	if(!$customrep->allowed_forum)
 	{
-		$plugins->remove_hook('forumdisplay_thread_end', 'ougc_customrep_forumdisplay_thread_end');
-
 		return;
 	}
 
@@ -920,7 +954,7 @@ function ougc_customrep_forumdisplay_before_thread(&$args)
 	eval('$headerinclude .= "'.$templates->get('ougccustomrep_headerinclude').'";');
 
 	$pids = array();
-	foreach($args['threadcache'] as $thread)
+	foreach($threadcache as $thread)
 	{
 		$pids[(int)$thread['firstpost']] = (int)$thread['firstpost'];
 	}
@@ -2846,86 +2880,89 @@ if(!function_exists('ougc_print_selection_javascript'))
 	}
 }
 
-/**
-* Alert formatter for my custom alert type.
-*/
-class OUGC_CustomRep_AlertFormmatter extends MybbStuff_MyAlerts_Formatter_AbstractFormatter
+if(class_exists('MybbStuff_MyAlerts_Formatter_AbstractFormatter'))
 {
 	/**
-	* Format an alert into it's output string to be used in both the main alerts listing page and the popup.
-	*
-	* @param MybbStuff_MyAlerts_Entity_Alert $alert The alert to format.
-	*
-	* @return string The formatted alert string.
+	* Alert formatter for my custom alert type.
 	*/
-	public function formatAlert(MybbStuff_MyAlerts_Entity_Alert $alert, array $outputAlert)
+	class OUGC_CustomRep_AlertFormmatter extends MybbStuff_MyAlerts_Formatter_AbstractFormatter
 	{
-		global $cache, $customrep;
-
-		$reps = (array)$cache->read('ougc_customrep');
-
-		$alertContent = $alert->getExtraDetails();
-
-		$rid = (int)$alertContent['rid'];
-
-		if(empty($rid))
+		/**
+		* Format an alert into it's output string to be used in both the main alerts listing page and the popup.
+		*
+		* @param MybbStuff_MyAlerts_Entity_Alert $alert The alert to format.
+		*
+		* @return string The formatted alert string.
+		*/
+		public function formatAlert(MybbStuff_MyAlerts_Entity_Alert $alert, array $outputAlert)
 		{
-			$log = $customrep->get_log($alert->getObjectId());
+			global $cache, $customrep;
 
-			if(!empty($log['rid']))
+			$reps = (array)$cache->read('ougc_customrep');
+
+			$alertContent = $alert->getExtraDetails();
+
+			$rid = (int)$alertContent['rid'];
+
+			if(empty($rid))
 			{
-				$rid = (int)$log['rid'];
+				$log = $customrep->get_log($alert->getObjectId());
+
+				if(!empty($log['rid']))
+				{
+					$rid = (int)$log['rid'];
+				}
 			}
+
+			if(!empty($reps[$rid]) && !empty($reps[$rid]['name']))
+			{
+				return $this->lang->sprintf($this->lang->ougc_customrep_myalerts_alert, $outputAlert['from_user'], htmlspecialchars_uni($reps[$rid]['name']));
+			}
+
+			return $this->lang->sprintf($this->lang->ougc_customrep_myalerts_alert_simple, $outputAlert['from_user']);
 		}
 
-		if(!empty($reps[$rid]) && !empty($reps[$rid]['name']))
+		/**
+		* Init function called before running formatAlert(). Used to load language files and initialize other required
+		* resources.
+		*
+		* @return void
+		*/
+		public function init()
 		{
-			return $this->lang->sprintf($this->lang->ougc_customrep_myalerts_alert, $outputAlert['from_user'], htmlspecialchars_uni($reps[$rid]['name']));
+			global $customrep;
+
+			$customrep->lang_load();
 		}
 
-		return $this->lang->sprintf($this->lang->ougc_customrep_myalerts_alert_simple, $outputAlert['from_user']);
-	}
-
-	/**
-	* Init function called before running formatAlert(). Used to load language files and initialize other required
-	* resources.
-	*
-	* @return void
-	*/
-	public function init()
-	{
-		global $customrep;
-
-		$customrep->lang_load();
-	}
-
-	/**
-	* Build a link to an alert's content so that the system can redirect to it.
-	*
-	* @param MybbStuff_MyAlerts_Entity_Alert $alert The alert to build the link for.
-	*
-	* @return string The built alert, preferably an absolute link.
-	*/
-	public function buildShowLink(MybbStuff_MyAlerts_Entity_Alert $alert)
-	{
-		global $settings;
-
-		$alertContent = $alert->getExtraDetails();
-
-		$post = get_post($alertContent['pid']);
-
-		if(!empty($post['pid']))
+		/**
+		* Build a link to an alert's content so that the system can redirect to it.
+		*
+		* @param MybbStuff_MyAlerts_Entity_Alert $alert The alert to build the link for.
+		*
+		* @return string The built alert, preferably an absolute link.
+		*/
+		public function buildShowLink(MybbStuff_MyAlerts_Entity_Alert $alert)
 		{
-			return $settings['bburl'].'/'. get_post_link($post['pid'], (int)$alertContent['tid']).'#pid'.$post['pid'];
+			global $settings;
+
+			$alertContent = $alert->getExtraDetails();
+
+			$post = get_post($alertContent['pid']);
+
+			if(!empty($post['pid']))
+			{
+				return $settings['bburl'].'/'. get_post_link($post['pid'], (int)$alertContent['tid']).'#pid'.$post['pid'];
+			}
+
+			$thread = get_thread($alertContent['tid']);
+
+			if(!empty($thread['tid']))
+			{
+				return $settings['bburl'].'/'. get_thread_link($thread['tid']);
+			}
+
+			return get_profile_link($alert->getFromUserId());
 		}
-
-		$thread = get_thread($alertContent['tid']);
-
-		if(!empty($thread['tid']))
-		{
-			return $settings['bburl'].'/'. get_thread_link($thread['tid']);
-		}
-
-		return get_profile_link($alert->getFromUserId());
 	}
 }
