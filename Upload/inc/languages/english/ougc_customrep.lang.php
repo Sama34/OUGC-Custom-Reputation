@@ -32,6 +32,9 @@ $l['ougc_customrep'] = 'OUGC Custom Reputation';
 // Error messages
 $l['ougc_customrep_error'] = 'Error';
 $l['ougc_customrep_error_nopermission'] = 'You don\'t have permission to do this.';
+$l['ougc_customrep_error_nopermission_guests'] = 'Please login to view rate details.';
+$l['ougc_customrep_error_nopermission_rate'] = 'You don\'t have permission to delete this rate.';
+$l['ougc_customrep_error_nopermission_attachment'] = 'You don\'t have permission to download this attachment. Please rate this thread and then try downloading the file again.';
 $l['ougc_customrep_error_invlidadpost'] = 'Invalid Post';
 $l['ougc_customrep_error_invalidpostcode'] = 'Invalid Post Code';
 $l['ougc_customrep_error_invalidthread'] = 'Invalid Thread';
@@ -42,6 +45,7 @@ $l['ougc_customrep_error_invalidrep'] = 'Invalid rating type.';
 $l['ougc_customrep_error_invalidrating'] = 'You are trying to delete a rating that doesn\'t exists.';
 $l['ougc_customrep_error_multiple'] = 'Multiple rating no allowed.';
 $l['ougc_customrep_error_points'] = 'You don\'t have enought points to use this rating. You need {1} in order to rate this post.';
+$l['ougc_customrep_error_points_author'] = '{1} doesn\'t have enought points for you to undo this rating. {1} needs {2} in order for you to undo this post.';
 
 // Misc page
 $l['ougc_customrep_viewall'] = 'View who rated this.';
@@ -68,6 +72,14 @@ $l['ougc_customrep_profile_stats_received'] = 'Received ratings.';
 $l['ougc_customrep_profile_stats_given'] = 'Given ratings.';
 
 $l['ougc_customrep_postbit_ignoredbit'] = 'The contents of this message are hidden because of its ratings.';
+
+$l['ougc_customrep_xthreads_error'] = 'Please configure the xThreads feature propertly for it to work.';
+$l['ougc_customrep_xthreads_error_user'] ='You need to rate this thread with the "{1}" rate in order to view hidden content.';
+$l['ougc_customrep_xthreads_error_author'] ='You\'re requesting your post to be rated to display additional content. Please add content in the text area or disable this request in your thread.';
+
+$l['myalerts_setting_ougc_customrep'] = 'Receive an alert when someone rates your posts?';
+$l['ougc_customrep_myalerts_alert'] = '{1} rated your post with the "{2}" rate.';
+$l['ougc_customrep_myalerts_alert_simple'] = '{1} rated your post.';
 
 // Multi-lang support for individual rate types
 #$l['ougc_customrep_name_RID'] = 'Name';

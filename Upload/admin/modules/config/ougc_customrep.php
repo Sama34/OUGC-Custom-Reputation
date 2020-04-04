@@ -229,6 +229,10 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 
 	$form_container->output_row($lang->ougc_customrep_h_order, $lang->ougc_customrep_f_disporder_d, $form->generate_text_box('disporder', $customrep->rep_data['disporder'], array('style' => 'text-align: center; width: 30px;" maxlength="5')));
 	$form_container->output_row($lang->ougc_customrep_h_visible, $lang->ougc_customrep_f_visible_d, $form->generate_yes_no_radio('visible', $customrep->rep_data['visible']));
+	$form_container->output_row($lang->ougc_customrep_h_firstpost, $lang->ougc_customrep_h_firstpost_d, $form->generate_yes_no_radio('firstpost', $customrep->rep_data['firstpost']));
+	$form_container->output_row($lang->ougc_customrep_h_allowdeletion, $lang->ougc_customrep_h_allowdeletion_d, $form->generate_yes_no_radio('allowdeletion', $customrep->rep_data['allowdeletion']));
+	$add || $form_container->output_row($lang->ougc_customrep_h_customvariable, $lang->sprintf($lang->ougc_customrep_h_customvariable_d, (int)$reputation['rid']), $form->generate_yes_no_radio('customvariable', $customrep->rep_data['customvariable']));
+	$form_container->output_row($lang->ougc_customrep_h_requireattach, $lang->ougc_customrep_h_requireattach_d, $form->generate_yes_no_radio('requireattach', $customrep->rep_data['requireattach']));
 	$form_container->output_row($lang->ougc_customrep_h_points, $lang->ougc_customrep_h_points_d, $form->generate_text_box('points', $customrep->rep_data['points']));
 	$form_container->output_row($lang->ougc_customrep_h_ignorepoints, $lang->ougc_customrep_h_ignorepoints_d, $form->generate_text_box('ignorepoints', $customrep->rep_data['ignorepoints']));
 
