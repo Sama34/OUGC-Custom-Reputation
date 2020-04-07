@@ -394,15 +394,27 @@ var OUGC_CustomReputation = {
 	{
 		var input = parseInt(value);
 
+		{\$xthreads_hideskip}
+
 		if(value > 0)
 		{
-			$('#xt_' + field + '_content').show();
+			$('#xt_' + field).show();
 		}
 		else
 		{
-			$('#xt_' + field + '_content').hide();
+			$('#xt_' + field).hide();
 		}
-	}
+	},
+
+	xThreadsHideSet: function(field)
+	{
+		if(typeof window.hide_fields === 'undefined')
+		{
+			window.hide_fields = new Array;
+		}
+
+		window.hide_fields = $.merge([field], window.hide_fields);
+	},
 }
 
 $( document ).ready(function() {
@@ -413,16 +425,27 @@ $( document ).ready(function() {
 EOF
 ,
 		'headerinclude_fa' 		=> '<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">',
-		'headerinclude_xthreads' 		=> '$(\'#xt_{$xt_field}_content\').html( $(\'#xt_{$xt_field}_content\', $(data)).html() );',
+		'headerinclude_xthreads' 		=> '$(\'#xt_{$xt_field}\').html( $(\'#xt_{$xt_field}\', $(data)).html() );',
 		'headerinclude_xthreads_editpost' 		=> '$(\'[name^="xthreads_{$xt_field}"]\').on(\'change\', function() {
-	if($(\'[name^="xthreads_{$xt_field}"]\').is(":checkbox"))
+	if($(\'input[name^="xthreads_{$xt_field}"]\').is(":checkbox") || $(\'input[name^="xthreads_{$xt_field}"]\').is(":radio"))
 	{
-		OUGC_CustomReputation.xThreads(+$(\'[name^="xthreads_{$xt_field}"]\').is(\':checked\'), \'{$xt_field}\');
+		OUGC_CustomReputation.xThreads(+this.value, \'{$xt_field}\');
 		return true;
 	}
 	OUGC_CustomReputation.xThreads(+this.value, \'{$xt_field}\');
 });
 OUGC_CustomReputation.xThreads(\'{$default_value}\', \'{$xt_field}\');',
+		'headerinclude_xthreads_editpost_hidecode' 		=> 'var fields = window.hide_fields;
+if(typeof fields !== \'undefined\')
+{
+	var arrayLength = window.hide_fields.length;
+	for (var i = 0; i < arrayLength; i++) {
+		if(window.hide_fields[i] == field)
+		{
+			return false;
+		}
+	}
+}',
 		'misc'				=> '<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder" style="text-align: left;">
 	<tr><td class="thead" colspan="2"><strong>{$title}</strong></td></tr>
 	<tr><td class="tcat" colspan="2"><strong>{$desc}</strong></td></tr>
@@ -728,7 +751,7 @@ function ougc_customrep_user_delete_content(&$dh)
 // Required for xThreads hack
 function ougc_customrep_editpost_end()
 {
-	global $mybb, $headerinclude, $templates, $post, $thread, $threadfields;
+	global $mybb, $footer, $templates, $post, $thread, $threadfields;
 
 	$font_awesome = '';
 	if($mybb->settings['ougc_customrep_fontawesome'])
@@ -736,10 +759,10 @@ function ougc_customrep_editpost_end()
 		eval('$font_awesome .= "'.$templates->get('ougccustomrep_headerinclude_fa').'";');
 	}
 
-	$xthreads_variables_editpost = '';
+	$xthreads_variables_editpost = $xthreads_hideskip = '';
 	if($mybb->settings['ougc_customrep_xthreads_hide'])
 	{
-		$xt_fields = explode(',',$mybb->settings['ougc_customrep_xthreads_hide']);
+		$xt_fields = explode(',', str_replace('_require', '', $mybb->settings['ougc_customrep_xthreads_hide']));
 		foreach($xt_fields as $xt_field)
 		{
 			if(!isset($threadfields[$xt_field]))
@@ -747,7 +770,9 @@ function ougc_customrep_editpost_end()
 				continue;
 			}
 
-			$default_value = (int)$threadfields[$xt_field];
+			eval('$xthreads_hideskip .= "'.$templates->get('ougccustomrep_headerinclude_xthreads_editpost_hidecode').'";');
+
+			$default_value = (int)$threadfields[$xt_field.'_require'];
 			if(isset($mybb->input['xthreads_ougc_customrep']))
 			{
 				$default_value = $mybb->get_input('xthreads_ougc_customrep', MyBB::INPUT_INT);
@@ -757,7 +782,7 @@ function ougc_customrep_editpost_end()
 		}
 	}
 
-	eval('$headerinclude .= "'.$templates->get('ougccustomrep_headerinclude').'";');
+	eval('$footer .= "'.$templates->get('ougccustomrep_headerinclude').'";');
 }
 
 // Required for attachments hack
@@ -879,7 +904,7 @@ function ougc_customrep_global_start()
 // Display ratings on forum display
 function ougc_customrep_forumdisplay_thread()
 {
-	global $fid, $customrep, $mybb, $db, $plugins, $headerinclude, $templates, $threadcache;
+	global $fid, $customrep, $mybb, $db, $plugins, $footer, $templates, $threadcache;
 
 	$plugins->remove_hook('forumdisplay_thread', 'ougc_customrep_forumdisplay_thread');
 
@@ -901,7 +926,7 @@ function ougc_customrep_forumdisplay_thread()
 		eval('$font_awesome .= "'.$templates->get('ougccustomrep_headerinclude_fa').'";');
 	}
 
-	eval('$headerinclude .= "'.$templates->get('ougccustomrep_headerinclude').'";');
+	eval('$footer .= "'.$templates->get('ougccustomrep_headerinclude').'";');
 
 	$pids = array();
 	foreach($threadcache as $thread)
@@ -943,7 +968,7 @@ function ougc_customrep_forumdisplay_thread_end(&$args)
 // Display ratings on portal
 function ougc_customrep_portal_announcement()
 {
-	global $fid, $customrep, $mybb, $db, $plugins, $headerinclude, $templates, $tids, $annfidswhere, $tunviewwhere, $numannouncements, $announcement;
+	global $fid, $customrep, $mybb, $db, $plugins, $footer, $templates, $tids, $annfidswhere, $tunviewwhere, $numannouncements, $announcement;
 
 	if(!$mybb->settings['ougc_customrep_portal'])
 	{
@@ -1002,7 +1027,7 @@ function ougc_customrep_portal_announcement()
 			eval('$font_awesome .= "'.$templates->get('ougccustomrep_headerinclude_fa').'";');
 		}
 
-		eval('$headerinclude .= "'.$templates->get('ougccustomrep_headerinclude').'";');
+		eval('$footer .= "'.$templates->get('ougccustomrep_headerinclude').'";');
 	}
 
 	if(empty($portal_cache[$announcement['fid']]))
@@ -1052,7 +1077,7 @@ function ougc_customrep_postbit(&$post)
 			return;
 		}
 
-		global $headerinclude;
+		global $footer;
 
 		$font_awesome = '';
 		if($mybb->settings['ougc_customrep_fontawesome'])
@@ -1063,14 +1088,14 @@ function ougc_customrep_postbit(&$post)
 		$xthreads_variables = '';
 		if($mybb->settings['ougc_customrep_xthreads_hide'])
 		{
-			$xt_fields = explode(',',$mybb->settings['ougc_customrep_xthreads_hide']);
+			$xt_fields = explode(',', str_replace('_require', '', $mybb->settings['ougc_customrep_xthreads_hide']));
 			foreach($xt_fields as $xt_field)
 			{
 				$xthreads_variables .= eval($templates->render('ougccustomrep_headerinclude_xthreads', true, false));
 			}
 		}
 
-		eval('$headerinclude .= "'.$templates->get('ougccustomrep_headerinclude').'";');
+		eval('$footer .= "'.$templates->get('ougccustomrep_headerinclude').'";');
 
 		global $db, $thread;
 		$customrep->cache['query'] = array();
@@ -1136,7 +1161,7 @@ function ougc_customrep_postbit(&$post)
 // Display user stats in profiles.
 function ougc_customrep_member_profile_end()
 {
-	global $db, $customrep, $mybb, $templates, $memprofile, $lang, $theme, $headerinclude;
+	global $db, $customrep, $mybb, $templates, $memprofile, $lang, $theme, $footer;
 
 	if(!$mybb->settings['ougc_customrep_stats_profile'])
 	{
@@ -1149,7 +1174,7 @@ function ougc_customrep_member_profile_end()
 		eval('$font_awesome .= "'.$templates->get('ougccustomrep_headerinclude_fa').'";');
 	}
 
-	eval('$headerinclude .= "'.$templates->get('ougccustomrep_headerinclude').'";');
+	eval('$footer .= "'.$templates->get('ougccustomrep_headerinclude').'";');
 
 	$customrep->lang_load();
 
@@ -1897,7 +1922,7 @@ function ougc_customrep_modal($content='', $title='', $desc='', $multipage='')
 }
 
 // Helper function for xThreads feature
-function ougc_customrep_xthreads_hide($field='', $value='')
+function ougc_customrep_xthreads_hide($value='', $field=true)
 {
 	global $customrep, $threadfields, $cache, $thread, $mybb, $db, $lang, $templates;
 
@@ -1910,22 +1935,56 @@ function ougc_customrep_xthreads_hide($field='', $value='')
 		$reps = (array)$cache->read('ougc_customrep');
 	}
 
+	$require_any = $field === true;
+
 	$rid = $threadfields[$field];
+
 	$thread['firstpost'] = (int)$thread['firstpost'];
 	$mybb->user['uid'] = (int)$mybb->user['uid'];
 
-	if(!empty($reps) && !empty($thread['firstpost']) && !empty($mybb->user['uid']) && !empty($rid) && !empty($reps[$rid]))
+	// thread author is the same as current user, do nothing
+	if((int)$thread['uid'] === $mybb->user['uid'])
 	{
+		return $value;
+	}
+
+	// such rating doesn't exists (maybe because none was selected), do nothing
+	if(!$require_any && empty($rid))
+	{
+		return $value;
+	}
+
+	// If thread field data is empty we assume author didn't select a value
+	if(!$require_any && isset($rid) && empty($rid))
+	{
+		return $value;
+	}
+
+	if(!empty($thread['firstpost']) && ($require_any || !empty($reps[$rid])))
+	{
+		$where = "pid='{$thread['firstpost']}' AND uid='{$mybb->user['uid']}'";
+		if(!$require_any)
+		{
+			$where .= " AND rid='{$rid}'";
+		}
+
 		$query = $db->simple_select(
 			'ougc_customrep_log',
 			'lid',
-			"pid='{$thread['firstpost']}' AND rid='{$rid}' AND uid='{$mybb->user['uid']}'",
+			$where,
 			array('limit', 1)
 		);
 
-		if((int)$db->num_rows($query) < 1 )
+		if((int)$db->num_rows($query) < 1)
 		{
-			$value = $lang->sprintf($lang->ougc_customrep_xthreads_error_user, htmlspecialchars_uni($reps[$rid]['name']));
+			if($require_any)
+			{
+				$value = $lang->ougc_customrep_xthreads_error_user_any;
+			}
+			else
+			{
+				$value = $lang->sprintf($lang->ougc_customrep_xthreads_error_user, htmlspecialchars_uni($reps[$rid]['name']));
+			}
 		}
 
 		$value .= eval($templates->render('ougccustomrep_xthreads_js'));
@@ -1933,6 +1992,7 @@ function ougc_customrep_xthreads_hide($field='', $value='')
 		return $value;
 	}
 
+	// Something is wrong, not sure what
 	return $lang->ougc_customrep_xthreads_error;
 }
 
@@ -2703,6 +2763,7 @@ class OUGC_CustomRep
 			'uids'	=> array(),
 			'rids'	=> array()
 		);
+
 		$query = $db->simple_select('reputation', 'rid, uid, pid', 'lid=\''.(int)$lid.'\'');
 		while($rep = $db->fetch_array($query))
 		{
@@ -2725,6 +2786,11 @@ class OUGC_CustomRep
 		$plugins->run_hooks('ouc_customrep_delete_log', $args);
 
 		// Now delete this log.
+		/*$query = $db->simple_select('ougc_customrep_log', 'pid', 'lid=\''.(int)$lid.'\'');
+		while($pid = $db->fetch_array($query, 'pid'))
+		{
+			$db->delete_query('ougc_customrep_log', 'pid=\''.(int)$pid.'\' AND uid=\''.(int)$mybb->user['uid'].'\'');
+		}*/
 		$db->delete_query('ougc_customrep_log', 'lid=\''.(int)$lid.'\'');
 	}
 
