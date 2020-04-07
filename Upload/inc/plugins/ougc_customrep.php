@@ -131,8 +131,8 @@ function ougc_customrep_info()
 		'website'		=> 'https://ougc.network',
 		'author'		=> 'Omar G.',
 		'authorsite'	=> 'https://ougc.network',
-		'version'		=> '1.8.21',
-		'versioncode'	=> 1821,
+		'version'		=> '1.8.22',
+		'versioncode'	=> 1822,
 		'compatibility'	=> '18*',
 		'codename'		=> 'ougc_customrep',
 		'newpoints'		=> '2.1.1',
@@ -505,39 +505,11 @@ OUGC_CustomReputation.xThreads(\'{$default_value}\', \'{$xt_field}\');',
 	$info = ougc_customrep_info();
 	if(isset($plugins['customrep']))
 	{
-		if((int)$plugins['customrep'] < 1100)
-		{
-			global $db;
+		global $customrep;
 
-			$db->modify_column('ougc_customrep', 'rid', "int UNSIGNED NOT NULL AUTO_INCREMENT");
-			$db->modify_column('ougc_customrep_log', 'lid', "int UNSIGNED NOT NULL AUTO_INCREMENT");
-			$db->modify_column('ougc_customrep_log', 'pid', "int NOT NULL DEFAULT '0'");
-			$db->modify_column('ougc_customrep_log', 'uid', "int NOT NULL DEFAULT '0'");
-			$db->modify_column('ougc_customrep_log', 'rid', "int NOT NULL DEFAULT '0'");
-			$db->modify_column('reputation', 'lid', 'int NOT NULL DEFAULT \'0\'');
-
-			if(!$db->index_exists('ougc_customrep_log', 'piduid'))
-			{
-				$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log ADD UNIQUE KEY piduid (pid,uid)');
-			}
-			if(!$db->index_exists('ougc_customrep_log', 'pidrid'))
-			{
-				$db->write_query('CREATE INDEX pidrid ON '.TABLE_PREFIX.'ougc_customrep_log (pid,rid)');
-			}
-		}
-
-		if((int)$plugins['customrep'] < 1821)
-		{
-			global $db;
-
-			$db->field_exists('firstpost', 'ougc_customrep') || $db->add_column('ougc_customrep', 'firstpost', "smallint(1) NOT NULL DEFAULT '1'");
-			$db->field_exists('allowdeletion', 'ougc_customrep') || $db->add_column('ougc_customrep', 'allowdeletion', "smallint(1) NOT NULL DEFAULT '1'");
-			$db->field_exists('customvariable', 'ougc_customrep') || $db->add_column('ougc_customrep', 'customvariable', "smallint(1) NOT NULL DEFAULT '0'");
-			$db->field_exists('requireattach', 'ougc_customrep') || $db->add_column('ougc_customrep', 'requireattach', "smallint(1) NOT NULL DEFAULT '0'");
-			$db->field_exists('points', 'ougc_customrep') || $db->add_column('ougc_customrep', 'points', "DECIMAL(16,2) NOT NULL default '0'");
-			$db->field_exists('ignorepoints', 'ougc_customrep') || $db->add_column('ougc_customrep', 'ignorepoints', "smallint(5) NOT NULL DEFAULT '0'");
-			$db->field_exists('points', 'ougc_customrep_log') || $db->add_column('ougc_customrep_log', 'points', "DECIMAL(16,2) NOT NULL default '0'");
-		}
+		$customrep->_db_verify_tables();
+		$customrep->_db_verify_columns();
+		$customrep->_db_verify_indexes();
 	}
 	$plugins['customrep'] = $info['versioncode'];
 	$cache->update('ougc_plugins', $plugins);
@@ -572,43 +544,12 @@ function ougc_customrep_deactivate()
 // _install function
 function ougc_customrep_install()
 {
-	global $customrep, $db;
+	global $customrep;
 	ougc_customrep_uninstall();
 
-	// Add our tables
-	$collation = $db->build_create_table_collation();
-	$db->write_query("CREATE TABLE `".TABLE_PREFIX."ougc_customrep` (
-			`rid` int UNSIGNED NOT NULL AUTO_INCREMENT,
-			`name` varchar(100) NOT NULL DEFAULT '',
-			`image` varchar(255) NOT NULL DEFAULT '',
-			`groups` text NOT NULL,
-			`forums` text NOT NULL,
-			`disporder` smallint(5) NOT NULL DEFAULT '0',
-			`visible` smallint(1) NOT NULL DEFAULT '1',
-			`firstpost` smallint(1) NOT NULL DEFAULT '1',
-			`allowdeletion` smallint(1) NOT NULL DEFAULT '1',
-			`customvariable` smallint(1) NOT NULL DEFAULT '1',
-			`reptype` varchar(3) NOT NULL DEFAULT '',
-			`points` DECIMAL(16,2) NOT NULL default '0',
-			`ignorepoints` smallint(5) NOT NULL DEFAULT '0',
-			PRIMARY KEY (`rid`)
-		) ENGINE=MyISAM{$collation};"
-	);
-
-	$db->write_query("CREATE TABLE `".TABLE_PREFIX."ougc_customrep_log` (
-			`lid` int UNSIGNED NOT NULL AUTO_INCREMENT,
-			`pid` int NOT NULL DEFAULT '0',
-			`uid` int NOT NULL DEFAULT '0',
-			`rid` int NOT NULL DEFAULT '0',
-			`points` DECIMAL(16,2) NOT NULL default '0',
-			`dateline` int(10) NOT NULL DEFAULT '0',
-			PRIMARY KEY (`lid`),
-			UNIQUE KEY piduid (pid,uid),
-			INDEX pidrid (pid,rid)
-		) ENGINE=MyISAM{$collation};"
-	);
-
-	$db->add_column('reputation', 'lid', 'int NOT NULL DEFAULT \'0\'');
+	$customrep->_db_verify_tables();
+	$customrep->_db_verify_columns();
+	$customrep->_db_verify_indexes();
 
 	// Add a default reputation type
 	$customrep->insert_rep(array(
@@ -630,9 +571,15 @@ function ougc_customrep_install()
 // _is_installed function
 function ougc_customrep_is_installed()
 {
-	global $db;
+	global $db, $customrep;
 
-	return $db->table_exists('ougc_customrep');
+	foreach($customrep->_db_tables() as $name => $table)
+	{
+		$installed = $db->table_exists($name);
+		break;
+	}
+
+	return $installed;
 }
 
 // _uninstall function
@@ -641,14 +588,17 @@ function ougc_customrep_uninstall()
 	global $customrep, $db, $PL;
 	$customrep->meets_requirements() or $customrep->admin_redirect($customrep->message, true);
 
-	// Drop our tables
-	$db->drop_table('ougc_customrep');
-	$db->drop_table('ougc_customrep_log');
-
-	// Drop reputation field
-	if($db->field_exists('lid', 'reputation'))
+	// Drop DB entries
+	foreach($customrep->_db_tables() as $name => $table)
 	{
-		$db->drop_column('reputation', 'lid');
+		$db->drop_table($name);
+	}
+	foreach($customrep->_db_columns() as $table => $columns)
+	{
+		foreach($columns as $name => $definition)
+		{
+			!$db->field_exists($name, $table) or $db->drop_column($table, $name);
+		}
 	}
 
 	// Delete the cache.
@@ -2042,6 +1992,135 @@ class OUGC_CustomRep
 		$this->newpoints_installed = function_exists('newpoints_addpoints') && $mybb->settings['newpoints_main_enabled'];
 
 		$this->myalerts_installed = $mybb->settings['ougc_customrep_myalerts'] && class_exists('MybbStuff_MyAlerts_AlertFormatterManager');
+	}
+
+	// List of tables
+	function _db_tables()
+	{
+		$tables = array(
+			'ougc_customrep'		=> array(
+				'rid'					=> "int UNSIGNED NOT NULL AUTO_INCREMENT",
+				'name'					=> "varchar(100) NOT NULL DEFAULT ''",
+				'image'					=> "varchar(255) NOT NULL DEFAULT ''",
+				'groups'				=> "text NOT NULL",
+				'forums'				=> "text NOT NULL",
+				'disporder'				=> "smallint(5) NOT NULL DEFAULT '0'",
+				'visible'				=> "smallint(1) NOT NULL DEFAULT '1'",
+				'firstpost'				=> "smallint(1) NOT NULL DEFAULT '1'",
+				'allowdeletion'			=> "smallint(1) NOT NULL DEFAULT '1'",
+				'customvariable'		=> "smallint(1) NOT NULL DEFAULT '1'",
+				'reptype'				=> "varchar(3) NOT NULL DEFAULT ''",
+				'points'				=> "DECIMAL(16,2) NOT NULL default '0'",
+				'ignorepoints'			=> "smallint(5) NOT NULL DEFAULT '0'",
+				'prymary_key'			=> "rid"
+			),
+			'ougc_customrep_log'	=> array(
+				'lid'					=> "int UNSIGNED NOT NULL AUTO_INCREMENT",
+				'pid'					=> "int NOT NULL DEFAULT '0'",
+				'uid'					=> "int NOT NULL DEFAULT '0'",
+				'rid'					=> "int NOT NULL DEFAULT '0'",
+				'points'				=> "DECIMAL(16,2) NOT NULL default '0'",
+				'dateline'				=> "int(10) NOT NULL DEFAULT '0'",
+				'prymary_key'			=> "lid"
+			)
+		);
+
+		return $tables;
+	}
+
+	// List of columns
+	function _db_columns()
+	{
+		$tables = array(
+			'reputation'	=> array(
+				'lid' => "int NOT NULL DEFAULT '0'"
+			),
+		);
+
+		return $tables;
+	}
+
+	// Verify DB tables
+	function _db_verify_tables()
+	{
+		global $db;
+
+		$collation = $db->build_create_table_collation();
+		foreach($this->_db_tables() as $table => $fields)
+		{
+			if($db->table_exists($table))
+			{
+				foreach($fields as $field => $definition)
+				{
+					if($field == 'prymary_key')
+					{
+						continue;
+					}
+
+					if($db->field_exists($field, $table))
+					{
+						$db->modify_column($table, "`{$field}`", $definition);
+					}
+					else
+					{
+						$db->add_column($table, $field, $definition);
+					}
+				}
+			}
+			else
+			{
+				$query = "CREATE TABLE IF NOT EXISTS `".TABLE_PREFIX."{$table}` (";
+				foreach($fields as $field => $definition)
+				{
+					if($field == 'prymary_key')
+					{
+						$query .= "PRIMARY KEY (`{$definition}`)";
+					}
+					else
+					{
+						$query .= "`{$field}` {$definition},";
+					}
+				}
+				$query .= ") ENGINE=MyISAM{$collation};";
+				$db->write_query($query);
+			}
+		}
+	}
+
+	// Verify DB columns
+	function _db_verify_columns()
+	{
+		global $db;
+
+		foreach($this->_db_columns() as $table => $columns)
+		{
+			foreach($columns as $field => $definition)
+			{
+				if($db->field_exists($field, $table))
+				{
+					$db->modify_column($table, "`{$field}`", $definition);
+				}
+				else
+				{
+					$db->add_column($table, $field, $definition);
+				}
+			}
+		}
+	}
+
+	// Verify DB indexes
+	function _db_verify_indexes()
+	{
+		global $db;
+
+		if(!$db->index_exists('ougc_customrep_log', 'piduid'))
+		{
+			$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log ADD UNIQUE KEY piduid (pid,uid)');
+		}
+		if(!$db->index_exists('ougc_customrep_log', 'pidrid'))
+		{
+			$db->write_query('CREATE INDEX pidrid ON '.TABLE_PREFIX.'ougc_customrep_log (pid,rid)');
+		}
 	}
 
 	// Load our language file if neccessary
