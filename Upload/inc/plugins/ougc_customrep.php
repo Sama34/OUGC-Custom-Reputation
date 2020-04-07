@@ -87,7 +87,6 @@ else
 		case 'member.php':
 		case 'attachment.php':
 			$plugins->add_hook('forumdisplay_thread', 'ougc_customrep_forumdisplay_thread');
-			$plugins->add_hook('forumdisplay_thread_end', 'ougc_customrep_forumdisplay_thread_end');
 
 			$plugins->add_hook('portal_announcement', 'ougc_customrep_portal_announcement');
 
@@ -710,10 +709,12 @@ function ougc_customrep_admin_formcontainer_output_row(&$args)
 		$selected_list = $mybb->input['upsetting']['ougc_customrep_xthreads_hide'];
 	}
 
+	$saved_fields = explode(',', $selected_list);
+
 	$option_list = $selected_list = array();
 	foreach($threadfields as $tf)
 	{
-		if(strpos(','.$mybb->settings['ougc_customrep_xthreads_hide'].',', $tf['field']) !== false)
+		if(array_intersect(array($tf['field']), $saved_fields))
 		{
 			$selected_list[] = $tf['field'];
 		}
@@ -849,10 +850,12 @@ function ougc_customrep_attachment_start()
 	{
 		if($reputation['requireattach'] && is_member($reputation['groups']) && is_member($reputation['forums'], array('usergroup' => $thread['fid'])))
 		{
-			if(!$reputation['firstpost'] || ($reputation['firstpost'] && !$is_first_post))
+			if($reputation['firstpost'] && !$is_first_post)
 			{
-				$required_rates[(int)$rid] = (int)$rid;
+				continue;
 			}
+
+			$required_rates[(int)$rid] = (int)$rid;
 		}
 	}
 
@@ -946,6 +949,10 @@ function ougc_customrep_forumdisplay_thread()
 	{
 		$customrep->cache['query'][$rep['rid']][$rep['pid']][$rep['lid']][$rep['uid']] = 1;
 	}
+
+	global $plugins;
+
+	$plugins->add_hook('forumdisplay_thread_end', 'ougc_customrep_forumdisplay_thread_end');
 }
 
 // Parse forum display
@@ -2069,6 +2076,7 @@ class OUGC_CustomRep
 				'firstpost'				=> "smallint(1) NOT NULL DEFAULT '1'",
 				'allowdeletion'			=> "smallint(1) NOT NULL DEFAULT '1'",
 				'customvariable'		=> "smallint(1) NOT NULL DEFAULT '1'",
+				'requireattach'			=> "smallint(1) NOT NULL DEFAULT '1'",
 				'reptype'				=> "varchar(3) NOT NULL DEFAULT ''",
 				'points'				=> "DECIMAL(16,2) NOT NULL default '0'",
 				'ignorepoints'			=> "smallint(5) NOT NULL DEFAULT '0'",
