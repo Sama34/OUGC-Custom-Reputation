@@ -75,6 +75,7 @@ $l['ougc_customrep_postbit_ignoredbit'] = 'The contents of this message are hidd
 
 $l['ougc_customrep_xthreads_error'] = 'Please configure the xThreads feature propertly for it to work.';
 $l['ougc_customrep_xthreads_error_user'] ='You need to rate this thread with the "{1}" rate in order to view hidden content.';
+$l['ougc_customrep_xthreads_error_user_any'] ='You need to rate this thread in order to view hidden content.';
 $l['ougc_customrep_xthreads_error_author'] ='You\'re requesting your post to be rated to display additional content. Please add content in the text area or disable this request in your thread.';
 
 $l['myalerts_setting_ougc_customrep'] = 'Receive an alert when someone rates your posts?';
