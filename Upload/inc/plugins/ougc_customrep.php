@@ -77,39 +77,42 @@ else
 
 	$plugins->add_hook('global_start', 'ougc_customrep_global_start');
 
-	switch(THIS_SCRIPT)
+	if(defined('THIS_SCRIPT'))
 	{
-		case 'forumdisplay.php':
-		case 'portal.php':
-		case 'reputation.php':
-		case 'showthread.php':
-		case 'editpost.php':
-		case 'member.php':
-		case 'attachment.php':
-			$plugins->add_hook('forumdisplay_thread', 'ougc_customrep_forumdisplay_thread');
+		switch(THIS_SCRIPT)
+		{
+			case 'forumdisplay.php':
+			case 'portal.php':
+			case 'reputation.php':
+			case 'showthread.php':
+			case 'editpost.php':
+			case 'member.php':
+			case 'attachment.php':
+				$plugins->add_hook('forumdisplay_thread', 'ougc_customrep_forumdisplay_thread');
 
-			$plugins->add_hook('portal_announcement', 'ougc_customrep_portal_announcement');
+				$plugins->add_hook('portal_announcement', 'ougc_customrep_portal_announcement');
 
-			$plugins->add_hook('reputation_start', 'ougc_customrep_delete_reputation');
+				$plugins->add_hook('reputation_start', 'ougc_customrep_delete_reputation');
 
-			$plugins->add_hook('showthread_start', 'ougc_customrep_request', -1);
-			$plugins->add_hook('postbit', 'ougc_customrep_postbit');
+				$plugins->add_hook('showthread_start', 'ougc_customrep_request', -1);
+				$plugins->add_hook('postbit', 'ougc_customrep_postbit');
 
-			$plugins->add_hook('member_profile_end', 'ougc_customrep_member_profile_end');
+				$plugins->add_hook('member_profile_end', 'ougc_customrep_member_profile_end');
 
-			$plugins->add_hook('editpost_end', 'ougc_customrep_editpost_end');
+				$plugins->add_hook('editpost_end', 'ougc_customrep_editpost_end');
 
-			$plugins->add_hook('attachment_start', 'ougc_customrep_attachment_start');
+				$plugins->add_hook('attachment_start', 'ougc_customrep_attachment_start');
 
-			// Moderation
-			$plugins->add_hook('class_moderation_delete_thread_start', 'ougc_customrep_delete_thread');
-			$plugins->add_hook('class_moderation_delete_post_start', 'ougc_customrep_delete_post');
-			$plugins->add_hook('class_moderation_merge_posts', 'ougc_customrep_merge_posts');
-			#$plugins->add_hook('class_moderation_merge_threads', 'ougc_customrep_merge_threads'); // seems like posts are updated instead of "re-created", good, less work
-			#$plugins->add_hook('class_moderation_split_posts', 'ougc_customrep_merge_threads'); // no sure what happens here
+				// Moderation
+				$plugins->add_hook('class_moderation_delete_thread_start', 'ougc_customrep_delete_thread');
+				$plugins->add_hook('class_moderation_delete_post_start', 'ougc_customrep_delete_post');
+				$plugins->add_hook('class_moderation_merge_posts', 'ougc_customrep_merge_posts');
+				#$plugins->add_hook('class_moderation_merge_threads', 'ougc_customrep_merge_threads'); // seems like posts are updated instead of "re-created", good, less work
+				#$plugins->add_hook('class_moderation_split_posts', 'ougc_customrep_merge_threads'); // no sure what happens here
 
-			$templatelist .= 'ougccustomrep_headerinclude, ougccustomrep_headerinclude_fa, ougccustomrep_rep_number, ougccustomrep_rep_img, ougccustomrep_rep_img_fa, ougccustomrep_rep, ougccustomrep_rep_fa, ougccustomrep, ougccustomrep_rep_voted, ougccustomrep_xthreads_js, ougccustomrep_headerinclude_xthreads_editpost, ougccustomrep_headerinclude_xthreads';
-			break;
+				$templatelist .= 'ougccustomrep_headerinclude, ougccustomrep_headerinclude_fa, ougccustomrep_rep_number, ougccustomrep_rep_img, ougccustomrep_rep_img_fa, ougccustomrep_rep, ougccustomrep_rep_fa, ougccustomrep, ougccustomrep_rep_voted, ougccustomrep_xthreads_js, ougccustomrep_headerinclude_xthreads_editpost, ougccustomrep_headerinclude_xthreads';
+				break;
+		}
 	}
 }
 
@@ -196,9 +199,14 @@ function ougc_customrep_activate()
 	font-weight: bolder;
 }
 
+.customrep .number.voted {
+	/*background: #fdd;*/
+}
+
 .customrep img {
 	vertical-align: middle;
 }
+
 .customrep img, .customrep i {
 	cursor: pointer;
     line-height: 1;
@@ -460,7 +468,7 @@ if(typeof fields !== \'undefined\')
 		'rep'					=> '<span title="{$lang_val}">{$image} {$reputation[\'name\']} {$number}</span>',
 		'rep_img'				=> '<img src="{$reputation[\'image\']}" title="{$lang_val}" />',
 		'rep_img_fa'				=> '<i class="{$reputation[\'image\']}" aria-hidden="true"></i>',
-		'rep_number'			=> '&nbsp;<a href="javascript:MyBB.popupWindow(\'/{$popupurl}\');" rel="nofollow" title="{$lang->ougc_customrep_viewall}" class="number" title="{$lang->ougc_customrep_viewlatest}" id="ougccustomrep_view_{$customrep->post[\'pid\']}">{$number}</a>',
+		'rep_number'			=> '&nbsp;<a href="javascript:MyBB.popupWindow(\'/{$popupurl}\');" rel="nofollow" title="{$lang->ougc_customrep_viewall}" class="number {$voted_class}" title="{$lang->ougc_customrep_viewlatest}" id="ougccustomrep_view_{$customrep->post[\'pid\']}">{$number}</a>',
 		'rep_voted'				=> '<a href="{$link}" class="voted {$classextra}">{$image}</a>',
 		'postbit_reputation'				=> '<span id="customrep_rep_{$post[\'pid\']}">{$post[\'userreputation\']}</span>',
 		'profile' 		=> '<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" width="100%" class="tborder">
@@ -690,7 +698,7 @@ function ougc_customrep_admin_formcontainer_output_row(&$args)
 {
 	global $lang, $cache, $form, $mybb;
 
-	if($args['title'] != $lang->setting_ougc_xthreads_hide)
+	if(empty($args['title']) || $args['title'] != $lang->setting_ougc_xthreads_hide)
 	{
 		return;
 	}
@@ -1496,6 +1504,31 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 		}
 		$number = my_number_format($number);
 
+		$voted_this = false;
+
+		if($voted && $customrep->post['uid'] != $mybb->user['uid'])
+		{
+			if($voted && !empty($customrep->cache['query'][$rid][$customrep->post['pid']]))
+			{
+				foreach($customrep->cache['query'][$rid][$customrep->post['pid']] as $votes)
+				{
+					if(isset($votes[$mybb->user['uid']]))
+					{
+						$voted_this = true;
+
+						break;
+					}
+				}
+			}
+		}
+
+		$voted_class = '';
+
+		if($voted_this)
+		{
+			$voted_class = 'voted';
+		}
+
 		eval('$number = "'.$templates->get('ougccustomrep_rep_number', 1, 0).'";');
 
 		$tmplt_img = 'ougccustomrep_rep_img';
@@ -1507,20 +1540,6 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 		$lang_val = '';
 		if($voted && $customrep->post['uid'] != $mybb->user['uid'])
 		{
-			// Check if this user has voted for this spesific reputation
-			$voted_this = false;
-			if($voted && !empty($customrep->cache['query'][$rid][$customrep->post['pid']]))
-			{
-				foreach($customrep->cache['query'][$rid][$customrep->post['pid']] as $votes)
-				{
-					if(isset($votes[$mybb->user['uid']]))
-					{
-						$voted_this = true;
-						break;
-					}
-				}
-			}
-
 			if($voted_this && $customrep->allow_delete && $reputation['allowdeletion'])
 			{
 				$link = $ajax_enabled ? $link_delete : $link.'&amp;delete=1';
