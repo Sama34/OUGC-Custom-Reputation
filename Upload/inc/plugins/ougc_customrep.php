@@ -316,6 +316,12 @@ function ougc_customrep_activate()
 			'optionscode'	=> 'yesno',
 			'value'			=> 0,
 		),
+		'multiple'	=> array(
+			'title'			=> $lang->setting_ougc_multiple,
+			'description'	=> $lang->setting_ougc_multiple_desc,
+			'optionscode'	=> 'yesno',
+			'value'			=> 0,
+		),
 	));
 
 	// Fill cache
@@ -323,112 +329,108 @@ function ougc_customrep_activate()
 
 	// Insert template/group
 	$PL->templates('ougccustomrep', $lang->ougc_customrep, array(
-		''						=> '<span class="customrep float_right" id="customrep_{$customrep->post[\'pid\']}">{$reputations}</span>',
+		''						=> '<span id="customrep_{$customrep->post[\'pid\']}">{$reputations}</span>',
 		'headerinclude' 		=> <<<EOF
-<script>
-/***************************************************************************
- *
- *	OUGC Custom Reputation plugin (JAVASCRIPT FILE)
- *	Author: Omar Gonzalez
- *	Copyright: © 2012 - 2020 Omar Gonzalez
- *
- *	Website: https://ougc.network
- *
- *	Allow users rate posts with custom post reputations with rich features.
- *
- ***************************************************************************
- 
-****************************************************************************
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-****************************************************************************/
-
-var OUGC_CustomReputation = {
-	Add: function(tid, pid, postcode, rid, del)
-	{
-		var deleteit = '';
-		if(del == 1)
-		{
-			deleteit = '&delete=1';
-		}
-
-		$.ajax(
-		{
-			url: 'showthread.php?tid=' + tid + '&action=customrep&pid=' + pid + '&my_post_key=' + postcode + '&rid=' + rid + deleteit,
-			type: 'post',
-			dataType: 'json',
-			success: function (request)
+		<script>
+		/***************************************************************************
+		 *
+		 *	OUGC Custom Reputation plugin (JAVASCRIPT FILE)
+		 *	Author: Omar Gonzalez
+		 *	Copyright: © 2012 - 2020 Omar Gonzalez
+		 *
+		 *	Website: https://ougc.network
+		 *
+		 *	Allow users rate posts with custom post reputations with rich features.
+		 *
+		 ***************************************************************************
+		 
+		****************************************************************************
+			This program is free software: you can redistribute it and/or modify
+			it under the terms of the GNU General Public License as published by
+			the Free Software Foundation, either version 3 of the License, or
+			(at your option) any later version.
+		
+			This program is distributed in the hope that it will be useful,
+			but WITHOUT ANY WARRANTY; without even the implied warranty of
+			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+			GNU General Public License for more details.
+		
+			You should have received a copy of the GNU General Public License
+			along with this program.  If not, see <http://www.gnu.org/licenses/>.
+		****************************************************************************/
+		
+		var OUGC_CustomReputation = {
+			Add: function(tid, pid, postcode, rid, del)
 			{
-				if(request.errors)
+				var deleteit = '';
+				if(del == 1)
 				{
-					alert(request.errors);
-					return false;
+					deleteit = '&delete=1';
 				}
-				if(request.success == 1)
+		
+				$.ajax(
 				{
-					$('#customrep_' + parseInt(request.pid)).replaceWith(request.content);
-					$('#customrep_rep_' + parseInt(request.pid)).replaceWith(request.userreputation);
-
-					if(typeof ougccustomrep_xthreads_activate !== 'undefined')
+					url: 'showthread.php?tid=' + tid + '&action=customrep&pid=' + pid + '&my_post_key=' + postcode + '&rid=' + rid + deleteit,
+					type: 'post',
+					dataType: 'json',
+					success: function (request)
 					{
-						$.get('showthread.php?tid=' + tid + '&pid=' + pid, function( data ) {
-							{\$xthreads_variables}
-						});
+						if(request.errors)
+						{
+							alert(request.errors);
+							return false;
+						}
+						if(request.success == 1)
+						{
+							$('#customrep_' + parseInt(request.pid)).replaceWith(request.content);
+							$('#customrep_' + parseInt(request.pid) + '_' + parseInt(request.rid)).replaceWith(request.content_rep);
+							$('#customrep_rep_' + parseInt(request.pid)).replaceWith(request.userreputation);
+		
+							if(typeof ougccustomrep_xthreads_activate !== 'undefined')
+							{
+								$.get('showthread.php?tid=' + tid + '&pid=' + pid, function( data ) {
+									{\$xthreads_variables}
+								});
+							}
+		
+							return true;
+						}
 					}
-
-					return true;
+				});
+			},
+		
+			xThreads: function(value, field)
+			{
+				var input = parseInt(value);
+		
+				{\$xthreads_hideskip}
+		
+				if(value > 0)
+				{
+					$('#xt_' + field).show();
 				}
-			}
+				else
+				{
+					$('#xt_' + field).hide();
+				}
+			},
+		
+			xThreadsHideSet: function(field)
+			{
+				if(typeof window.hide_fields === 'undefined')
+				{
+					window.hide_fields = new Array;
+				}
+		
+				window.hide_fields = $.merge([field], window.hide_fields);
+			},
+		}
+		
+		$( document ).ready(function() {
+			{\$xthreads_variables_editpost}
 		});
-	},
-
-	PopUp: function(tid, pid, postcode, rid, del)
-	{
-		MyBB.popupWindow('showthread.php?tid=' + tid + '&pid=' + pid + '&action=customreppu&rid=' + rid + '&my_post_key=1' + postcode);
-	},
-
-	xThreads: function(value, field)
-	{
-		var input = parseInt(value);
-
-		{\$xthreads_hideskip}
-
-		if(value > 0)
-		{
-			$('#xt_' + field).show();
-		}
-		else
-		{
-			$('#xt_' + field).hide();
-		}
-	},
-
-	xThreadsHideSet: function(field)
-	{
-		if(typeof window.hide_fields === 'undefined')
-		{
-			window.hide_fields = new Array;
-		}
-
-		window.hide_fields = $.merge([field], window.hide_fields);
-	},
-}
-
-$( document ).ready(function() {
-	{\$xthreads_variables_editpost}
-});
-</script>
-{\$font_awesome}
+		</script>
+		{\$font_awesome}
 EOF
 ,
 		'headerinclude_fa' 		=> '<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">',
@@ -465,7 +467,7 @@ if(typeof fields !== \'undefined\')
 <td class="{$trow}" width="60%">{$log[\'profilelink_f\']}</td>
 <td class="{$trow}" width="40%" align="center">{$date}</td>
 </tr>',
-		'rep'					=> '<span title="{$lang_val}">{$image} {$reputation[\'name\']} {$number}</span>',
+		'rep'					=> '<span title="{$lang_val}" class="customrep float_right" id="customrep_{$customrep->post[\'pid\']}_{$rid}">{$image} {$reputation[\'name\']} {$number}</span>',
 		'rep_img'				=> '<img src="{$reputation[\'image\']}" title="{$lang_val}" />',
 		'rep_img_fa'				=> '<i class="{$reputation[\'image\']}" aria-hidden="true"></i>',
 		'rep_number'			=> '&nbsp;<a href="javascript:MyBB.popupWindow(\'/{$popupurl}\');" rel="nofollow" title="{$lang->ougc_customrep_viewall}" class="number {$voted_class}" title="{$lang->ougc_customrep_viewlatest}" id="ougccustomrep_view_{$customrep->post[\'pid\']}">{$number}</a>',
@@ -595,6 +597,7 @@ function ougc_customrep_install()
 		'requireattach'	=> 0,
 		'points'	=> 0,
 		'ignorepoints'	=> 0,
+		'inmultiple'	=> 0,
 	));
 }
 
@@ -1417,8 +1420,21 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 
 	// Has this current user voted for this custom reputation?
 	$voted = false;
-	foreach($customrep->rids as $rid)
+
+	$voted_rids = $firstpost_only = $unique_rids = array();
+
+	foreach($customrep->cache['_reps'] as $rid => $rate)
 	{
+		if(!empty($rate['firstpost']))
+		{
+			$firstpost_only[$rid] = $rid;
+		}
+
+		if(!$rate['inmultiple'])
+		{
+			$unique_rids[$rid] = $rid;
+		}
+
 		if(isset($customrep->cache['query'][$rid][$customrep->post['pid']]))
 		{
 			//TODO
@@ -1426,15 +1442,17 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 			{
 				if(isset($votes[$mybb->user['uid']]))
 				{
+					$voted_rids[$rid] = $rid;
+
 					$voted = true;
-					break;
 				}
 			}
 		}
 	}
-	unset($rid);
+	unset($rid, $rate);
 
 	global $templates, $lang;
+
 	$customrep->lang_load();
 
 	$post_url = get_post_link($customrep->post['pid'], $customrep->post['tid']);
@@ -1449,20 +1467,6 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 	if(!$ajax_enabled)
 	{
 		$lang->ougc_customrep_viewlatest = $lang->ougc_customrep_viewlatest_noajax;
-	}
-
-	static $firstpost_only = null;
-
-	if($firstpost_only === null)
-	{
-		$firstpost_only = array();
-		foreach($customrep->cache['_reps'] as $rid => $reputation)
-		{
-			if(!empty($reputation['firstpost']))
-			{
-				$firstpost_only[$rid] = true;
-			}
-		}
 	}
 
 	foreach($customrep->cache['_reps'] as $rid => $reputation)
@@ -1502,24 +1506,14 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 		{
 			$number = count($customrep->cache['query'][$rid][$customrep->post['pid']]);
 		}
+
 		$number = my_number_format($number);
 
 		$voted_this = false;
 
-		if($voted && $customrep->post['uid'] != $mybb->user['uid'])
+		if(isset($voted_rids[$rid]))
 		{
-			if($voted && !empty($customrep->cache['query'][$rid][$customrep->post['pid']]))
-			{
-				foreach($customrep->cache['query'][$rid][$customrep->post['pid']] as $votes)
-				{
-					if(isset($votes[$mybb->user['uid']]))
-					{
-						$voted_this = true;
-
-						break;
-					}
-				}
-			}
+			$voted_this = true;
 		}
 
 		$voted_class = '';
@@ -1538,9 +1532,14 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 		}
 
 		$lang_val = '';
-		if($voted && $customrep->post['uid'] != $mybb->user['uid'])
+
+		$can_vote = is_member($reputation['groups']) && $customrep->post['uid'] != $mybb->user['uid'];
+
+		if($voted && $voted_this)
 		{
-			if($voted_this && $customrep->allow_delete && $reputation['allowdeletion'])
+			$can_vote = false;
+
+			if($customrep->allow_delete && $reputation['allowdeletion'])
 			{
 				$link = $ajax_enabled ? $link_delete : $link.'&amp;delete=1';
 
@@ -1549,19 +1548,14 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 				eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 				eval('$image = "'.$templates->get('ougccustomrep_rep_voted', 1, 0).'";');
 			}
-			elseif($voted_this)
+			else
 			{
 				$lang_val = $lang->sprintf($lang->ougc_customrep_voted, $reputation['name']);
 				eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 			}
-			else
-			{
-				$lang_val = $lang->ougc_customrep_voted_undo;
-				eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
-			}
 		}
-		elseif(($reputation['groups'] == -1 || ($reputation['groups'] && $customrep->is_member($reputation['groups']))) && $customrep->post['uid'] != $mybb->user['uid'])
-		{//TODO
+		elseif($can_vote && ($reputation['inmultiple'] || !(isset($unique_rids[$rid]) && array_intersect($unique_rids, $voted_rids))))
+		{
 			$lang_val = $lang->sprintf($lang->ougc_customrep_vote, $reputation['name']);
 			eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 			eval('$image = "'.$templates->get('ougccustomrep_rep_voted', 1, 0).'";');
@@ -1571,6 +1565,12 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 			$lang_val = $reputation['name'];
 			eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 		}
+		/*
+		{
+			$lang_val = $lang->ougc_customrep_voted_undo;
+			eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
+		}
+		*/
 
 		eval('$rep = "'.$templates->get('ougccustomrep_rep', 1, 0).'";');
 
@@ -1605,7 +1605,8 @@ function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 // Plugin request
 function ougc_customrep_request()
 {
-	global $customrep, $mybb, $tid, $templates;
+	global $customrep, $mybb, $tid, $templates, $thread, $fid, $lang;
+
 	$customrep->lang_load();
 
 	$ajax_enabled = $mybb->settings['use_xmlhttprequest'] && $mybb->settings['ougc_customrep_enableajax'];
@@ -1620,19 +1621,29 @@ function ougc_customrep_request()
 		return;
 	}
 
-	$customrep->lang_load();
+	$error = $mybb->get_input('action') == 'customreppu' ? 'ougc_customrep_modal_error' : ($ajax_enabled ? 'ougc_customrep_ajax_error' : 'error');
+
+	$rid = $mybb->get_input('rid', MyBB::INPUT_INT);
+
+	if(!($reputation = $customrep->get_rep($rid)))
+	{
+		$error($lang->ougc_customrep_error_invalidrep);
+	}
+
+	$customrep->set_forum($fid);
+
+	if(!$reputation['visible'] || !array_key_exists($rid, $customrep->cache['_reps']))
+	{
+		$error($lang->ougc_customrep_error_invalidrep);
+	}
 
 	if($mybb->get_input('action') == 'customreppu')
 	{
-		global $thread, $fid, $lang;
-
 		// Good bay guests :)
 		if(!$mybb->user['uid'] && !$mybb->settings['ougc_customrep_guests_popup'])
 		{
 			ougc_customrep_modal_error($lang->ougc_customrep_error_nopermission_guests);
 		}
-
-		$customrep->set_forum($fid);
 
 		$customrep->allowed_forum or ougc_customrep_modal_error($lang->ougc_customrep_error_invalidforum);
 
@@ -1641,13 +1652,6 @@ function ougc_customrep_request()
 		unset($post);
 
 		!empty($customrep->post) or ougc_customrep_modal_error($lang->ougc_customrep_error_invlidadpost);
-
-		if(!($reputation = $customrep->get_rep($mybb->get_input('rid', 1))))
-		{
-			ougc_customrep_modal_error($lang->ougc_customrep_error_invalidrep);
-		}
-
-		$reputation['visible'] or ougc_customrep_modal_error($lang->ougc_customrep_error_invalidrep);
 
 		if(($customrep->firstpost_only || $reputation['firstpost']) && $customrep->post['pid'] != $thread['firstpost'])
 		{
@@ -1747,12 +1751,10 @@ function ougc_customrep_request()
 		ougc_customrep_modal($content, $title, $desc, $multipage);
 	}
 
-	global $lang, $fid, $thread;
-
 	// Good bay guests :)
 	if(!$mybb->user['uid'])
 	{
-		error($lang->ougc_customrep_error_nopermission);
+		$error($lang->ougc_customrep_error_nopermission);
 	}
 
 	verify_post_check($mybb->get_input('my_post_key'));
@@ -1764,36 +1766,22 @@ function ougc_customrep_request()
 
 	if(empty($customrep->post))
 	{
-		error($lang->ougc_customrep_error_invlidadpost);
+		$error($lang->ougc_customrep_error_invlidadpost);
 	}
 
 	if($mybb->user['uid'] == $customrep->post['uid'])
 	{
-		error($lang->ougc_customrep_error_selftrating);
+		$error($lang->ougc_customrep_error_selftrating);
 	}
-
-	$customrep->set_forum($fid);
-
-	if(!$customrep->allowed_forum)
-	{
-		error($lang->ougc_customrep_error_invalidforum);
-	}
-
-	$error = $ajax_enabled ? 'ougc_customrep_ajax_error' : 'error';
 
 	if(!$customrep->allowed_forum)
 	{
 		$error($lang->ougc_customrep_error_invalidforum);
 	}
 
-	if(!($reputation = $customrep->get_rep($mybb->get_input('rid', 1))))
+	if(!$customrep->allowed_forum)
 	{
-		$error($lang->ougc_customrep_error_invalidrep);
-	}
-
-	if(!$reputation['visible'] || !array_key_exists($reputation['rid'], $customrep->cache['_reps']))
-	{
-		$error($lang->ougc_customrep_error_invalidrep);
+		$error($lang->ougc_customrep_error_invalidforum);
 	}
 
 	if($reputation['groups'] == '' || ($reputation['groups'] != -1 && !$customrep->is_member($reputation['groups'])))
@@ -1848,11 +1836,84 @@ function ougc_customrep_request()
 	}
 	else
 	{
-		//  AND rid='{$reputation['rid']}'
-		$query = $db->simple_select('ougc_customrep_log', 'lid', "pid='{$customrep->post['pid']}' AND uid='{$mybb->user['uid']}'", array('limit' => 1));
-		if($db->fetch_field($query, 'lid'))
+		$uid = $mybb->user['uid'];
+
+		if($mybb->settings['ougc_customrep_multiple'])
 		{
-			$error($lang->ougc_customrep_error_multiple); // TODO: Allow multiple ratings?
+			if($reputation['inmultiple'])
+			{
+				$query = $db->simple_select(
+					'ougc_customrep_log',
+					'rid',
+					"pid='{$customrep->post['pid']}' AND uid='{$uid}' AND rid='{$rid}'",
+					array('limit' => 1)
+				);
+	
+				$already_rated = (bool)$db->fetch_field($query, 'rid');
+
+				if($already_rated)
+				{
+					$error($lang->ougc_customrep_error_multiple);
+				}
+			}
+			else
+			{
+				$unique_rids = array();
+		
+				foreach($customrep->cache['_reps'] as $key => $rate)
+				{
+					if(!$rate['inmultiple'])
+					{
+						$unique_rids[(int)$key] = (int)$key;
+					}
+				}
+
+				$unique_rids = implode("','", $unique_rids);
+
+				$query = $db->simple_select(
+					'ougc_customrep_log',
+					'lid',
+					"pid='{$customrep->post['pid']}' AND uid='{$uid}' AND rid IN ('{$unique_rids}')",
+					array('limit' => 1)
+				);
+
+				$already_rated = (bool)$db->fetch_field($query, 'lid');
+
+				if($already_rated)
+				{
+					$error($lang->ougc_customrep_error_multiple_single);
+				}
+			}
+
+			$query = $db->simple_select(
+				'ougc_customrep_log',
+				'rid',
+				"pid='{$customrep->post['pid']}' AND uid='{$uid}' AND rid='{$rid}'",
+				array('limit' => 1)
+			);
+
+			$already_rated = (bool)$db->fetch_field($query, 'rid');
+
+			if($already_rated)
+			{
+				$error($lang->ougc_customrep_error_multiple);
+			}
+		}
+		else
+		{
+			$query = $db->simple_select(
+				'ougc_customrep_log',
+				'lid',
+				"pid='{$customrep->post['pid']}' AND uid='{$uid}'",
+				array('limit' => 1)
+			);
+	
+			$already_rated = (bool)$db->fetch_field($query, 'lid');
+
+			if($already_rated)
+			{
+				$error($lang->ougc_customrep_error_multiple);
+			}
 		}
 
 		$reputation['points'] = (float)$reputation['points'];
@@ -1910,6 +1971,15 @@ function ougc_customrep_request()
 	ougc_customrep_parse_postbit($post, $reputation['rid']);
 
 	eval('$post[\'userreputation\'] = "'.$templates->get('ougccustomrep_postbit_reputation').'";');
+
+	/*_dump(isset($post['customrep']), array(
+		'success'			=> 1,
+		'pid'				=> $customrep->post['pid'],
+		'rid'				=> $reputation['rid'],
+		'content'			=> $post['customrep'],
+		'content_rep'		=> $post['customrep_'.$reputation['rid']],
+		'userreputation'	=> $post['userreputation'],
+	));*/
 
 	ougc_customrep_ajax(array(
 		'success'			=> 1,
@@ -2117,6 +2187,7 @@ class OUGC_CustomRep
 				'reptype'				=> "varchar(3) NOT NULL DEFAULT ''",
 				'points'				=> "DECIMAL(16,2) NOT NULL default '0'",
 				'ignorepoints'			=> "smallint(5) NOT NULL DEFAULT '0'",
+				'inmultiple'			=> "smallint(5) NOT NULL DEFAULT '0'",
 				'prymary_key'			=> "rid"
 			),
 			'ougc_customrep_log'	=> array(
@@ -2218,10 +2289,16 @@ class OUGC_CustomRep
 	{
 		global $db;
 
-		if(!$db->index_exists('ougc_customrep_log', 'piduid'))
+		if($db->index_exists('ougc_customrep_log', 'piduid'))
 		{
-			$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log ADD UNIQUE KEY piduid (pid,uid)');
+			$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log DROP KEY piduid');
 		}
+
+		if(!$db->index_exists('ougc_customrep_log', 'piduidrid'))
+		{
+			$db->write_query('ALTER TABLE '.TABLE_PREFIX.'ougc_customrep_log ADD UNIQUE KEY piduidrid (pid,rid,uid)');
+		}
+
 		if(!$db->index_exists('ougc_customrep_log', 'pidrid'))
 		{
 			$db->write_query('CREATE INDEX pidrid ON '.TABLE_PREFIX.'ougc_customrep_log (pid,rid)');
@@ -2516,6 +2593,11 @@ class OUGC_CustomRep
 			$insert_data['ignorepoints'] = (int)$data['ignorepoints'];
 		}
 
+		if(isset($data['inmultiple']))
+		{
+			$insert_data['inmultiple'] = (int)$data['inmultiple'];
+		}
+
 		$insert_data['reptype'] = '';
 		if($data['reptype'] != '')
 		{
@@ -2566,6 +2648,7 @@ class OUGC_CustomRep
 				'requireattach'	=> $reputation['requireattach'],
 				'points'	=> $reputation['points'],
 				'ignorepoints'	=> $reputation['ignorepoints'],
+				'inmultiple'	=> $reputation['inmultiple'],
 				'reptype'	=> $reputation['reptype'],
 			);
 		}
@@ -2589,6 +2672,7 @@ class OUGC_CustomRep
 				'requireattach'	=> 0,
 				'points'	=> 0,
 				'ignorepoints'	=> 0,
+				'inmultiple'	=> 0,
 				'reptype'	=> '',
 			);
 		}

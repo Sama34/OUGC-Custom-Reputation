@@ -171,12 +171,12 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 	if($add)
 	{
 		$form = new Form($customrep->build_url('action=add'), 'post');
-		$form_container = new FormContainer($sub_tabs['ougc_customrep_add']['description']);
+		$form_container = new FormContainer($sub_tabs['ougc_customrep_add']['title']);
 	}
 	else
 	{
 		$form = new Form($customrep->build_url(array('action' => 'edit', 'rid' => $reputation['rid'])), 'post');
-		$form_container = new FormContainer($sub_tabs['ougc_customrep_edit']['description']);
+		$form_container = new FormContainer($sub_tabs['ougc_customrep_edit']['title']);
 	}
 
 	$form_container->output_row($lang->ougc_customrep_h_name.' <em>*</em>', $lang->ougc_customrep_h_name_d, $form->generate_text_box('name', $customrep->rep_data['name']));
@@ -235,6 +235,7 @@ if($mybb->get_input('action') == 'add' || $mybb->get_input('action') == 'edit')
 	$form_container->output_row($lang->ougc_customrep_h_requireattach, $lang->ougc_customrep_h_requireattach_d, $form->generate_yes_no_radio('requireattach', $customrep->rep_data['requireattach']));
 	$form_container->output_row($lang->ougc_customrep_h_points, $lang->ougc_customrep_h_points_d, $form->generate_text_box('points', $customrep->rep_data['points']));
 	$form_container->output_row($lang->ougc_customrep_h_ignorepoints, $lang->ougc_customrep_h_ignorepoints_d, $form->generate_text_box('ignorepoints', $customrep->rep_data['ignorepoints']));
+	$form_container->output_row($lang->ougc_customrep_h_inmultiple, $lang->ougc_customrep_h_inmultiple_d, $form->generate_yes_no_radio('inmultiple', $customrep->rep_data['inmultiple']));
 
 	$form_container->end();
 
@@ -309,7 +310,7 @@ else
 		$table->construct_cell('<div align="center">'.$lang->ougc_customrep_message_empty.'</div>', array('colspan' => 5));
 		$table->construct_row();
 
-		$table->output($sub_tabs['ougc_customrep_view']['description']);
+		$table->output($sub_tabs['ougc_customrep_view']['title']);
 	}
 	else
 	{
@@ -337,15 +338,17 @@ else
 			{
 				$image = '<img src="'.$customrep->get_image($reputation['image'], $reputation['rid']).'" />';
 			}
-			
+
+			$link = $customrep->build_url(array('action' => 'edit', 'rid' => $reputation['rid']));
+
 			$table->construct_cell($image, array('class' => 'align_center'));
-			$table->construct_cell(htmlspecialchars_uni($reputation['name']));
+			$table->construct_cell("<a href='{$link}'>".htmlspecialchars_uni($reputation['name']).'</a>');
 			$table->construct_cell($form->generate_text_box('disporder['.$reputation['rid'].']', (int)$reputation['disporder'], array('style' => 'text-align: center; width: 30px;')), array('class' => 'align_center'));
 
 			$table->construct_cell(($reputation['visible'] ? $lang->yes : $lang->no), array('class' => 'align_center'));
 
 			$popup = new PopupMenu('rep_'.$reputation['rid'], $lang->options);
-			$popup->add_item($lang->ougc_customrep_tab_edit, $customrep->build_url(array('action' => 'edit', 'rid' => $reputation['rid'])));
+			$popup->add_item($lang->ougc_customrep_tab_edit, $link);
 			$popup->add_item($lang->delete, $customrep->build_url(array('action' => 'delete', 'rid' => $reputation['rid'])));
 			$table->construct_cell($popup->fetch(), array('class' => 'align_center'));
 
@@ -379,7 +382,7 @@ else
 			}
 		}
 		$limitstring .= '</div>';
-		$table->output($sub_tabs['ougc_customrep_view']['description'].$limitstring);
+		$table->output($sub_tabs['ougc_customrep_view']['title'].$limitstring);
 
 		$form->output_submit_wrapper(array($form->generate_submit_button($lang->ougc_customrep_button_disponder), $form->generate_reset_button($lang->reset)));
 		$form->end();

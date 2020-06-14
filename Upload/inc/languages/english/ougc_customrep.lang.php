@@ -43,7 +43,8 @@ $l['ougc_customrep_error_selftrating'] = 'You can\'t rate your own posts.';
 $l['ougc_customrep_error_closedthread'] = 'You are not allowed to rate closed threads.';
 $l['ougc_customrep_error_invalidrep'] = 'Invalid rating type.';
 $l['ougc_customrep_error_invalidrating'] = 'You are trying to delete a rating that doesn\'t exists.';
-$l['ougc_customrep_error_multiple'] = 'Multiple rating no allowed.';
+$l['ougc_customrep_error_multiple'] = 'You have already rated using this rate.';
+$l['ougc_customrep_error_multiple_single'] = 'You have already rated using a unique rate.';
 $l['ougc_customrep_error_points'] = 'You don\'t have enought points to use this rating. You need {1} in order to rate this post.';
 $l['ougc_customrep_error_points_author'] = '{1} doesn\'t have enought points for you to undo this rating. {1} needs {2} in order for you to undo this post.';
 

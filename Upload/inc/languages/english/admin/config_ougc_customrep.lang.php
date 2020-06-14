@@ -56,7 +56,7 @@ $l['ougc_customrep_h_visible'] = 'Visible';
 $l['ougc_customrep_perm'] = 'Can manage custom reputations?';
 
 // Tabs
-$l['ougc_customrep_tab_view'] = 'View';
+$l['ougc_customrep_tab_view'] = 'View All';
 $l['ougc_customrep_tab_view_d'] = 'List of existing ratings.';
 $l['ougc_customrep_tab_add'] = 'Add';
 $l['ougc_customrep_tab_add_d'] = 'Add a new custom reputation.';
@@ -88,6 +88,10 @@ $l['ougc_customrep_h_points'] = 'Newpoints Points Cost';
 $l['ougc_customrep_h_points_d'] = 'Please note that the post author receives the points and points are reverted if the rating is deleted.';
 $l['ougc_customrep_h_ignorepoints'] = 'Hide Post On Count';
 $l['ougc_customrep_h_ignorepoints_d'] = 'Posts can be hidden by default if they reach an amount of rates. Please insert the amount of rates needed for posts to be hidden by default.';
+$l['ougc_customrep_h_inmultiple'] = 'Allow in Multiple';
+$l['ougc_customrep_h_inmultiple_d'] = 'If the <code>Multiple Rating Global Switch</code> setting and this setting are both active, rates will be split into two categories:<br />
+Unique category: All rates with this setting off. Only one of these rates can be used per post.<br />
+Multiple category: All rates with this setting on. Any and all rates can be used at the same time per post.';
 
 // Validation
 $l['ougc_customrep_error_invalidname'] = 'Invalid name.';
@@ -120,6 +124,8 @@ $l['setting_ougc_guests_popup'] = 'Allow Guests to View Popup';
 $l['setting_ougc_guests_popup_desc'] = 'Enable this setting if you want to allow guests viewing rate detail modals.';
 $l['setting_ougc_myalerts'] = 'MyAlerts Support';
 $l['setting_ougc_myalerts_desc'] = 'Enable this setting allow MyAlerts support with this plugin.';
+$l['setting_ougc_multiple'] = 'Multiple Rating Global Switch';
+$l['setting_ougc_multiple_desc'] = 'Enable this setting to allow users to rate post multiple times (using different ratings).';
 
 $l['setting_ougc_xthreads_information'] = '<span style="color: gray;">To be able to use this feature you need to install <a href="http://mybbhacks.zingaburga.com/showthread.php?tid=288">xThreads</a> and create some fields according to the documentation.</span>';
 
