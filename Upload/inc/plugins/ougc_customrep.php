@@ -977,7 +977,7 @@ function ougc_customrep_forumdisplay_thread_end(&$args)
 
 	$customrep->set_url(get_thread_link($thread['tid']));
 
-	ougc_customrep_parse_postbit($thread['customrep']);
+	ougc_customrep_parse_postbit($thread);
 }
 
 // Display ratings on portal
@@ -1055,7 +1055,7 @@ function ougc_customrep_portal_announcement()
 	$customrep->set_url(get_thread_link($announcement['tid']));
 
 	// Now we build the reputation bit
-	ougc_customrep_parse_postbit($announcement['customrep']);
+	ougc_customrep_parse_postbit($announcement);
 }
 
 // Postbit
@@ -1170,7 +1170,7 @@ function ougc_customrep_postbit(&$post)
 	}
 
 	// Now we build the reputation bit
-	ougc_customrep_parse_postbit($post['customrep']);
+	ougc_customrep_parse_postbit($post);
 }
 
 // Display user stats in profiles.
@@ -1409,7 +1409,7 @@ function ougc_customrep_delete_reputation()
 }
 
 // Parse posbit content output
-function ougc_customrep_parse_postbit(&$var, $div=true)
+function ougc_customrep_parse_postbit(&$var, $specific_rid=null)
 {
 	global $mybb, $customrep;
 
@@ -1572,20 +1572,34 @@ function ougc_customrep_parse_postbit(&$var, $div=true)
 			eval('$image = "'.$templates->get($tmplt_img, 1, 0).'";');
 		}
 
-		eval('$reputations .= "'.$templates->get('ougccustomrep_rep', 1, 0).'";');
+		eval('$rep = "'.$templates->get('ougccustomrep_rep', 1, 0).'";');
+
+		if(!empty($reputation['customvariable']) || $specific_rid !== null && (int)$specific_rid === (int)$rid)
+		{
+			$var['customrep_'.$rid] = $rep;
+
+			/*if($specific_rid !== null)
+			{
+				break;
+			}*/
+		}
+
+		if(empty($reputation['customvariable']))
+		{
+			$reputations .= $rep;
+		}
 	}
 	unset($rid, $reputation);
 
+	/*if($specific_rid !== null)
+	{
+		return false;
+	}*/
+
+	$reputations = trim($reputations);
+
 	// if $reputations is empty maybe return false?
-	if($div)
-	{
-		$reputations = trim($reputations);
-		eval('$var = "'.$templates->get('ougccustomrep').'";');
-	}
-	else
-	{
-		$var = trim($reputations);
-	}
+	eval('$var[\'customrep\'] = "'.$templates->get('ougccustomrep').'";');
 }
 
 // Plugin request
@@ -1605,6 +1619,8 @@ function ougc_customrep_request()
 	{
 		return;
 	}
+
+	$customrep->lang_load();
 
 	if($mybb->get_input('action') == 'customreppu')
 	{
@@ -1683,8 +1699,6 @@ function ougc_customrep_request()
 			$multipage = '';
 		}
 
-		$customrep->lang_load();
-
 		$query = $db->query('SELECT r.*, u.username, u.usergroup, u.displaygroup, u.avatar, u.avatartype, u.avatardimensions
 			FROM '.TABLE_PREFIX.'ougc_customrep_log r 
 			LEFT JOIN '.TABLE_PREFIX.'users u ON (u.uid=r.uid)
@@ -1734,8 +1748,6 @@ function ougc_customrep_request()
 	}
 
 	global $lang, $fid, $thread;
-
-	$customrep->lang_load();
 
 	// Good bay guests :)
 	if(!$mybb->user['uid'])
@@ -1880,25 +1892,31 @@ function ougc_customrep_request()
 
 	// > On postbit, the plugin loads ALL votes, and does a summation + check for current user voting on this.  This can potentially be problematic if there happens to be a large number of votes.
 	$query = $db->simple_select('ougc_customrep_log', '*', "pid='{$customrep->post['pid']}'"); //  AND rid='{$reputation['rid']}'
-	while($reputation = $db->fetch_array($query))
+	while($rep = $db->fetch_array($query))
 	{
-		$customrep->cache['query'][$reputation['rid']][$reputation['pid']][$reputation['lid']][$reputation['uid']] = 1;
+		$customrep->cache['query'][$rep['rid']][$rep['pid']][$rep['lid']][$rep['uid']] = 1;
 	}
+
+	$query = $db->simple_select('users', 'reputation', "uid='{$customrep->post['uid']}'");
+
+	$user_reputation = (int)$db->fetch_field($query, 'reputation');
 
 	$post = array(
 		'pid'				=> $customrep->post['pid'],
-		'userreputation'	=> get_reputation((int)$db->fetch_field($db->simple_select('users', 'reputation', 'uid=\''.$customrep->post['uid'].'\''), 'reputation'), $customrep->post['uid']),
+		'userreputation'	=> get_reputation($user_reputation, $customrep->post['uid']),
 		'content'	=> ''
 	);
 
-	ougc_customrep_parse_postbit($post['content']);
+	ougc_customrep_parse_postbit($post, $reputation['rid']);
 
 	eval('$post[\'userreputation\'] = "'.$templates->get('ougccustomrep_postbit_reputation').'";');
 
 	ougc_customrep_ajax(array(
 		'success'			=> 1,
 		'pid'				=> $customrep->post['pid'],
-		'content'			=> $post['content'],
+		'rid'				=> $reputation['rid'],
+		'content'			=> $post['customrep'],
+		'content_rep'		=> $post['customrep_'.$reputation['rid']],
 		'userreputation'	=> $post['userreputation'],
 	));
 }

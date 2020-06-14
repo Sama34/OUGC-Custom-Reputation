@@ -79,7 +79,7 @@ $l['ougc_customrep_h_firstpost_d'] = 'Whether if enable this rating only for the
 $l['ougc_customrep_h_allowdeletion'] = 'Allow Deletion';
 $l['ougc_customrep_h_allowdeletion_d'] = 'Allow users to undo their rate.';
 $l['ougc_customrep_h_customvariable'] = 'Output in Custom Variable';
-$l['ougc_customrep_h_customvariable_d'] = 'Disable this rate from the global variables. You will need to add {$post[\'customrep_{1}\']} within your "postbit" or "postbit_classic" templates. <strong style="color: red">This feature is a planned feature, it currently does nothing.</strong>';
+$l['ougc_customrep_h_customvariable_d'] = 'Disable this rate from the global variables. You will need to add <code>{$post[\'customrep_{1}\']}</code> in your <code>postbit</code>, and <code>postbit_classic</code> templates, <code>{$thread[\'customrep_{1}\']}</code> in your <code>forumdisplay_thread</code> template, and <code>{$announcement[\'customrep_{1}\']}</code> in your <code>portal_announcement</code> template.';
 $l['ougc_customrep_h_requireattach'] = 'Require to Download Attachments';
 $l['ougc_customrep_h_requireattach_d'] = 'Enable this feature to require users to rate a post before downloading attachments.';
 $l['ougc_customrep_h_reptype'] = 'Reputation Level';
