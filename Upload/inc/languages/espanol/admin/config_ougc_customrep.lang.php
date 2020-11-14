@@ -73,17 +73,17 @@ $l['ougc_customrep_f_groups_d'] = 'Selecciona los grupos que pueden utilizar est
 $l['ougc_customrep_f_forums'] = 'Foros';
 $l['ougc_customrep_f_forums_d'] = 'Selecciona los foros en los que se puede utilizar esta reacción.';
 $l['ougc_customrep_f_disporder_d'] = 'Orden en el que aparecerá esta reacción.';
-$l['ougc_customrep_f_visible_d'] = 'Te permite habilitar o deshabilitar temporalmente esta reacción.';
+$l['ougc_customrep_f_visible_d'] = 'Te permite habilitar o desactivar temporalmente esta reacción.';
 $l['ougc_customrep_h_firstpost'] = 'Primer mensaje solamente';
-$l['ougc_customrep_h_firstpost_d'] = 'Elige sí esta reacción solo se puedw utilizar en el primer mensaje del tema.';
+$l['ougc_customrep_h_firstpost_d'] = 'Elige sí esta reacción solo se puede utilizar en el primer mensaje del tema.';
 $l['ougc_customrep_h_allowdeletion'] = 'Permitir eliminar';
 $l['ougc_customrep_h_allowdeletion_d'] = 'Permite a los usuarios eliminar sus propias reacciones.';
 $l['ougc_customrep_h_customvariable'] = 'Salida en variable personalizada';
-$l['ougc_customrep_h_customvariable_d'] = 'Deshabilita la salida global de las reacciones. Necesitarás añadir {$post[\'customrep_{1}\']} en tu plantilla "postbit" o "postbit_classic". <strong style="color: red">Esta característica es planeada a futuro, actualmente no hace nada.</strong>';
+$l['ougc_customrep_h_customvariable_d'] = 'Desactiva la salida global de las reacciones. Necesitarás añadir {$post[\'customrep_{1}\']} en tu plantilla "postbit" o "postbit_classic". <strong style="color: red">Esta característica es planeada a futuro, actualmente no hace nada.</strong>';
 $l['ougc_customrep_h_requireattach'] = 'Se necesita para descargar archivos adjuntos';
 $l['ougc_customrep_h_requireattach_d'] = 'Habilita esta característica si los usuarios tendrán que dar esta reacción a un mensaje para poder descargar sus archivos adjuntos.';
 $l['ougc_customrep_h_reptype'] = 'Nivel de reputación';
-$l['ougc_customrep_h_reptype_d'] = 'Seleccion cuántos puntos de reputación añadirá a un usuario. Deja vacío para deshabilitar.';
+$l['ougc_customrep_h_reptype_d'] = 'Selecciona cuántos puntos de reputación añadirá a un usuario. Deja vacío para desactivar.';
 $l['ougc_customrep_h_points'] = 'Costo en puntos de Newpoints';
 $l['ougc_customrep_h_points_d'] = 'Tenga en cuenta que el autor del mensaje recibe los puntos y dichos puntos serán revertidos si se elimina la reacción.';
 $l['ougc_customrep_h_ignorepoints'] = 'Ocultar mensaje por conteo';
@@ -97,21 +97,21 @@ $l['ougc_customrep_error_invalidreptype'] = 'Nivel de reputación inválido.';
 
 // Settings
 $l['setting_ougc_customrep_firstpost'] = 'Primer mensaje solamente (global)';
-$l['setting_ougc_customrep_firstpost_desc'] = 'Habilita esta opción si deseas que solo se permitan reacciones en el primer mensaje de un tema. Deshabilita si deseas configurar esta opción para cada reacción.';
+$l['setting_ougc_customrep_firstpost_desc'] = 'Habilita esta opción si deseas que solo se permitan reacciones en el primer mensaje de un tema. Desactiva si deseas configurar esta opción para cada reacción.';
 $l['setting_ougc_customrep_delete'] = 'Permitir borrar (global)';
-$l['setting_ougc_customrep_delete_desc'] = 'Habilita esta opción si deseas que se puedan borrar las reacciones. Deshabilita si deseas configurar esta opción para cada reacción.';
+$l['setting_ougc_customrep_delete_desc'] = 'Habilita esta opción si deseas que se puedan borrar las reacciones. Desactiva si deseas configurar esta opción para cada reacción.';
 $l['setting_ougc_customrep_perpage'] = 'Elementos por página';
 $l['setting_ougc_customrep_perpage_desc'] = 'Número máximo de elementos a mostrar por página.';
 $l['setting_ougc_customrep_fontawesome'] = 'Usar Font Awesome Icons';
 $l['setting_ougc_customrep_fontawesome_desc'] = 'Activa esta opción si deseas utilizar font awesome icons en lugar de imágenes.';
 $l['setting_ougc_customrep_fontawesome_acp'] = 'Codigo Font Awesome para el ACP';
-$l['setting_ougc_customrep_fontawesome_acp_desc'] = 'Agrega el codigo para cargar Font Awesome icons dentro del panel de administracion.';
+$l['setting_ougc_customrep_fontawesome_acp_desc'] = 'Agrega el código para cargar Font Awesome icons dentro del panel de administración.';
 $l['setting_ougc_customrep_threadlist'] = 'Mostrar en lista de temas';
 $l['setting_ougc_customrep_threadlist_desc'] = 'Selecciona los foros donde se mostrarán las reacciones en la lista de temas.';
 $l['setting_ougc_customrep_portal'] = 'Mostrar en anuncios del portal';
 $l['setting_ougc_customrep_portal_desc'] = 'Selecciona los foros cuyos temas en el portal podrán mostrar la caja de reacciones.';
-$l['setting_ougc_xthreads_hide'] = 'Activar Caracteristica xThreads';
-$l['setting_ougc_xthreads_hide_desc'] = 'Selecciona que campos de xThreads se deben de considerar para controlar el contenido a mostrar. <a href="https://ougc.network/module?faqs&filtertf_plugins_code=ougc_customrep">Favor de leer la documentación para más información.</a> <a href="https://mybb-es.com/hilo-1-8-ougc-custom-reputation-xthreads-pide-a-usuarios-reaccionar-para-mostrar-contenido">También puedes leer el siguiente tutorial.</a>';
+$l['setting_ougc_xthreads_hide'] = 'Activar Característica xThreads';
+$l['setting_ougc_xthreads_hide_desc'] = 'Selecciona que campos de xThreads se deben de considerar para controlar el contenido a mostrar. <a href="https://ougc.network/module?faqs&filtertf_plugins_code=ougc_customrep">Favor de leer la documentación para más información.</a> <a href="https://mybb-es.com/hilo-1-8-ougc-custom-reputation-xthreads-pide-a-usuarios-reaccionar-para-mostrar-contenido">También puedes leer la siguiente guía.</a>';
 $l['setting_ougc_stats_profile'] = 'Mostrar estadísticas de los usuarios en sus perfiles';
 $l['setting_ougc_stats_profile_desc'] = 'Habilita esta característica para mostrar las estadísticas de reacciones dadas y recibidas en los perfiles de los usuarios.';
 $l['setting_ougc_enableajax'] = 'Habilitar Características Ajax';
@@ -121,5 +121,4 @@ $l['setting_ougc_guests_popup_desc'] = 'Habilita esta opción si deseas que los 
 $l['setting_ougc_myalerts'] = 'Incorporar con MyAlerts';
 $l['setting_ougc_myalerts_desc'] = 'Habilita esta opción si deseas que los usuarios reciban notificaciones a través de MyAlerts.';
 
-$l['setting_ougc_xthreads_information'] = '<span style="color: gray;">Para habilitar esta característica es necesario que tengas instalado <a href="http://mybbhacks.zingaburga.com/showthread.php?tid=288">xThreads</a> y crear algunos campos tal y como se muestra en la documentación.</span> <a href="https://mybb-es.com/hilo-1-8-ougc-custom-reputation-xthreads-pide-a-usuarios-reaccionar-para-mostrar-contenido">Ver tutorial</a>';
-
+$l['setting_ougc_xthreads_information'] = '<span style="color: gray;">Para habilitar esta característica es necesario que tengas instalado <a href="http://mybbhacks.zingaburga.com/showthread.php?tid=288">xThreads</a> y crear algunos campos tal y como se muestra en la documentación.</span> <a href="https://mybb-es.com/hilo-1-8-ougc-custom-reputation-xthreads-pide-a-usuarios-reaccionar-para-mostrar-contenido">Ver guía.</a>';
