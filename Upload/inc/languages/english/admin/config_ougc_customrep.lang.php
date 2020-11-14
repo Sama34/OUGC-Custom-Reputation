@@ -115,7 +115,7 @@ $l['setting_ougc_customrep_threadlist_desc'] = 'Select the forums where you want
 $l['setting_ougc_customrep_portal'] = 'Display On Portal Announcements';
 $l['setting_ougc_customrep_portal_desc'] = 'Select the forums where threads need to be from to display its custom reputation box within the portal announcements listing.';
 $l['setting_ougc_xthreads_hide'] = 'Active xThreads Hide Feature';
-$l['setting_ougc_xthreads_hide_desc'] = 'Select which xthreads this feature should hijack to control display status. Please read the documentation for this feature.';
+$l['setting_ougc_xthreads_hide_desc'] = 'Select which xThreads fields this feature should hijack to control display status. <a href="https://ougc.network/module?faqs&filtertf_plugins_code=ougc_customrep">Please read the documentation for this feature.<a/>';
 $l['setting_ougc_stats_profile'] = 'Display Users Stats in Profiles';
 $l['setting_ougc_stats_profile_desc'] = 'Enable this setting to display user stats within profiles.';
 $l['setting_ougc_enableajax'] = 'Enable Ajax Features';
