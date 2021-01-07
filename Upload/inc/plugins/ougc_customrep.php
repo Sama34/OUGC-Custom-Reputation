@@ -2038,7 +2038,9 @@ function ougc_customrep_modal($content='', $title='', $desc='', $multipage='')
 // Helper function for xThreads feature
 function ougc_customrep_xthreads_hide($value='', $field=true)
 {
-	global $customrep, $threadfields, $cache, $thread, $mybb, $db, $lang, $templates;
+	global $customrep, $threadfields, $cache, $thread, $mybb, $db, $lang, $templates, $fid;
+
+	$fid = (int)$fid;
 
 	$customrep->lang_load();
 
@@ -2047,13 +2049,31 @@ function ougc_customrep_xthreads_hide($value='', $field=true)
 	if($reps === null)
 	{
 		$reps = (array)$cache->read('ougc_customrep');
+
+		if($fid)
+		{
+			foreach($reps as $rid => $rep)
+			{
+				if(!is_member($rep['forums'], ['usergroup' => $fid]))
+				{
+					unset($reps[$rid]);
+				}
+			}
+		}
 	}
 
 	$require_any = $field === true;
 
 	$rid = $threadfields[$field];
 
+	// There are no ratings
+	if(empty($reps) || (!$require_any && empty($reps[$rid])))
+	{
+		return $value;
+	}
+
 	$thread['firstpost'] = (int)$thread['firstpost'];
+
 	$mybb->user['uid'] = (int)$mybb->user['uid'];
 
 	// thread author is the same as current user, do nothing
@@ -2077,6 +2097,7 @@ function ougc_customrep_xthreads_hide($value='', $field=true)
 	if(!empty($thread['firstpost']) && ($require_any || !empty($reps[$rid])))
 	{
 		$where = "pid='{$thread['firstpost']}' AND uid='{$mybb->user['uid']}'";
+	
 		if(!$require_any)
 		{
 			$where .= " AND rid='{$rid}'";
